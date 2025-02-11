@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "./ui/card";
@@ -21,7 +20,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { toast } from "sonner";
-import { Edit, FileText, User, CheckCircle, XCircle } from "lucide-react";
+import { FileText, User, CheckCircle } from "lucide-react";
 
 interface Position {
   id: string;
@@ -98,15 +97,24 @@ const OpenPositions = () => {
   };
 
   const handleApply = (positionId: string) => {
-    toast.success("Application submitted successfully!");
+    toast.success("Internal application started! Please complete your profile.");
   };
 
   const handleAssignManager = (positionId: string) => {
     toast.success("Manager assigned successfully!");
   };
 
-  const handleViewResume = (positionId: string) => {
-    toast.info("Opening resume viewer...");
+  const handleUploadResume = (positionId: string) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        toast.success(`Resume "${file.name}" uploaded successfully!`);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -234,28 +242,26 @@ const OpenPositions = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditingId(position.id)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
                         onClick={() => handleApply(position.id)}
+                        title="Apply as Internal Employee"
                       >
                         <User className="w-4 h-4" />
                       </Button>
+                      {isHRTeam && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAssignManager(position.id)}
+                          title="Assign Manager"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAssignManager(position.id)}
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewResume(position.id)}
+                        onClick={() => handleUploadResume(position.id)}
+                        title="Upload Resume"
                       >
                         <FileText className="w-4 h-4" />
                       </Button>
