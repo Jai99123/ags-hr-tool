@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { toast } from "sonner";
-import { FileText, User, CheckCircle } from "lucide-react";
+import { FileText, User, CheckCircle, Edit2, Save } from "lucide-react";
 
 interface Position {
   id: string;
@@ -31,6 +31,13 @@ interface Position {
   assignedManager: string;
   candidateStatus?: "pending" | "selected" | "rejected";
   feedback?: string;
+}
+
+interface Manager {
+  id: string;
+  name: string;
+  position: string;
+  email: string;
 }
 
 interface NewPosition {
@@ -79,6 +86,26 @@ const OpenPositions = () => {
     "Emma Wilson",
     "David Clark"
   ]);
+  const [managers, setManagers] = useState<Manager[]>([
+    {
+      id: "1",
+      name: "John Smith",
+      position: "Senior Manager",
+      email: "john.smith@company.com"
+    },
+    {
+      id: "2",
+      name: "Sarah Johnson",
+      position: "Technical Lead",
+      email: "sarah.j@company.com"
+    }
+  ]);
+  const [editingManager, setEditingManager] = useState<Manager | null>(null);
+  const [newManager, setNewManager] = useState<Omit<Manager, 'id'>>({
+    name: "",
+    position: "",
+    email: ""
+  });
 
   const isHRTeam = true; // This would be connected to your auth state
 
@@ -161,6 +188,39 @@ const OpenPositions = () => {
     input.click();
   };
 
+  const handleEditManager = (manager: Manager) => {
+    setEditingManager(manager);
+    setNewManager({
+      name: manager.name,
+      position: manager.position,
+      email: manager.email
+    });
+    setShowManagerForm(true);
+  };
+
+  const handleManagerSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (editingManager) {
+      // Update existing manager
+      setManagers(managers.map(m => 
+        m.id === editingManager.id 
+          ? { ...m, ...newManager }
+          : m
+      ));
+      toast.success("Manager updated successfully!");
+    } else {
+      // Add new manager
+      const newId = (managers.length + 1).toString();
+      setManagers([...managers, { id: newId, ...newManager }]);
+      toast.success("New manager added successfully!");
+    }
+
+    setShowManagerForm(false);
+    setEditingManager(null);
+    setNewManager({ name: "", position: "", email: "" });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -170,14 +230,28 @@ const OpenPositions = () => {
       <Card className="p-6 backdrop-blur-sm bg-card/90">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Open Positions</h2>
-          {isHRTeam && (
-            <Button 
-              variant="outline"
-              onClick={() => setShowNewPositionForm(true)}
-            >
-              New Position
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {isHRTeam && (
+              <>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowNewPositionForm(true)}
+                >
+                  New Position
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setEditingManager(null);
+                    setNewManager({ name: "", position: "", email: "" });
+                    setShowManagerForm(true);
+                  }}
+                >
+                  Add Manager
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {showNewPositionForm && isHRTeam && (
@@ -280,34 +354,49 @@ const OpenPositions = () => {
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           >
             <Card className="p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">Assign Manager</h3>
-              <form onSubmit={handleManagerAssignSubmit} className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4">
+                {editingManager ? 'Edit Manager' : 'Add New Manager'}
+              </h3>
+              <form onSubmit={handleManagerSave} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Select Manager</label>
-                  <Select
-                    value={managerName}
-                    onValueChange={setManagerName}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a manager" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableManagers.map((manager) => (
-                        <SelectItem key={manager} value={manager}>
-                          {manager}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <label className="text-sm font-medium">Manager Name</label>
+                  <Input
+                    value={newManager.name}
+                    onChange={(e) => setNewManager({ ...newManager, name: e.target.value })}
+                    placeholder="Enter manager name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Position</label>
+                  <Input
+                    value={newManager.position}
+                    onChange={(e) => setNewManager({ ...newManager, position: e.target.value })}
+                    placeholder="Enter manager position"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Email Address</label>
+                  <Input
+                    type="email"
+                    value={newManager.email}
+                    onChange={(e) => setNewManager({ ...newManager, email: e.target.value })}
+                    placeholder="Enter manager email"
+                    required
+                  />
                 </div>
                 <div className="flex gap-2">
-                  <Button type="submit">Assign Manager</Button>
+                  <Button type="submit">
+                    {editingManager ? 'Save Changes' : 'Add Manager'}
+                  </Button>
                   <Button 
                     type="button" 
                     variant="outline"
                     onClick={() => {
                       setShowManagerForm(false);
-                      setManagerName("");
+                      setEditingManager(null);
+                      setNewManager({ name: "", position: "", email: "" });
                     }}
                   >
                     Cancel
@@ -437,6 +526,43 @@ const OpenPositions = () => {
               </div>
             </div>
           </motion.div>
+        )}
+
+        {isHRTeam && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">Managers</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {managers.map((manager) => (
+                  <TableRow key={manager.id}>
+                    <TableCell>{manager.name}</TableCell>
+                    <TableCell>{manager.position}</TableCell>
+                    <TableCell>{manager.email}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditManager(manager)}
+                          title="Edit Manager"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </Card>
     </motion.div>
