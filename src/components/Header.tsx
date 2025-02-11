@@ -2,10 +2,14 @@
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import { SignInForm } from "./SignInForm";
 
 const Header = () => {
   const isSignedIn = false; // This would be connected to your auth state
   const location = useLocation();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <motion.header
@@ -28,9 +32,16 @@ const Header = () => {
           </Link>
         </nav>
       </div>
-      <Button variant="outline">
-        {isSignedIn ? "Sign Out" : "Sign In"}
-      </Button>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline">
+            {isSignedIn ? "Sign Out" : "Sign In"}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <SignInForm onClose={() => setIsDialogOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </motion.header>
   );
 };
