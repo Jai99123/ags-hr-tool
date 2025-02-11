@@ -4,6 +4,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -21,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -128,6 +137,19 @@ const HR = () => {
     }
   ]);
 
+  const [emailContent, setEmailContent] = useState<string>(`Dear [Candidate Name],
+
+We hope this email finds you well. This is regarding your onboarding process at our company. Please find the necessary information and next steps below.
+
+[Customized Content Here]
+
+Please ensure to complete all the required steps and submit the necessary documents through the provided link. If you have any questions, don't hesitate to reach out to the HR team.
+
+Best regards,
+HR Team`);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
     setApplications(applications.map(app => 
       app.id === applicationId ? { ...app, status: newStatus } : app
@@ -223,6 +245,25 @@ const HR = () => {
     const candidate = candidateOnboarding.find(c => c.id === candidateId);
     if (candidate) {
       toast.success(`${type === 'document' ? 'Document submission confirmation' : 'Joining reminder'} sent to ${candidate.email}`);
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type === "image/jpeg" || file.type === "image/png") {
+        setSelectedFile(file);
+        toast.success("File uploaded successfully");
+      } else {
+        toast.error("Please upload only JPG or PNG files");
+      }
+    }
+  };
+
+  const handleEmailSend = (candidateId: string, content: string) => {
+    const candidate = candidateOnboarding.find(c => c.id === candidateId);
+    if (candidate) {
+      toast.success(`Email sent to ${candidate.email}`);
     }
   };
 
@@ -415,22 +456,80 @@ const HR = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => generateOnboardingLink(candidate.id)}
-                            >
-                              <Link className="w-4 h-4 mr-2" />
-                              Generate Link
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => sendNotification(candidate.id, 'document')}
-                            >
-                              <Mail className="w-4 h-4 mr-2" />
-                              Send Email
-                            </Button>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  <Link className="w-4 h-4 mr-2" />
+                                  Generate Link
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Upload Document</DialogTitle>
+                                  <DialogDescription>
+                                    Upload a JPG or PNG file to attach to the onboarding link.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <Input
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png"
+                                    onChange={handleFileUpload}
+                                    className="cursor-pointer"
+                                  />
+                                  {selectedFile && (
+                                    <p className="text-sm text-muted-foreground">
+                                      Selected file: {selectedFile.name}
+                                    </p>
+                                  )}
+                                  <Button
+                                    onClick={() => {
+                                      generateOnboardingLink(candidate.id);
+                                      toast.success("Link generated with attached document");
+                                    }}
+                                  >
+                                    Generate Link with Document
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  <Mail className="w-4 h-4 mr-2" />
+                                  Send Email
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Edit Email Content</DialogTitle>
+                                  <DialogDescription>
+                                    Customize the email content before sending.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <Textarea
+                                    value={emailContent}
+                                    onChange={(e) => setEmailContent(e.target.value)}
+                                    className="min-h-[200px]"
+                                  />
+                                  <Button
+                                    onClick={() => {
+                                      handleEmailSend(candidate.id, emailContent);
+                                    }}
+                                  >
+                                    Send Email
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
                           </div>
                         </TableCell>
                       </TableRow>
