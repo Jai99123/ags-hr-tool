@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "./ui/card";
@@ -48,6 +49,7 @@ interface Application {
 }
 
 interface AssignmentForm {
+  managerName: string;
   managerEmail: string;
   interviewerEmail: string;
 }
@@ -80,6 +82,7 @@ const OpenPositions = () => {
     email: "",
   });
   const [assignForm, setAssignForm] = useState<AssignmentForm>({
+    managerName: "",
     managerEmail: "",
     interviewerEmail: "",
   });
@@ -139,7 +142,7 @@ const OpenPositions = () => {
 
   const handleAssignSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!assignForm.managerEmail || !assignForm.interviewerEmail) {
+    if (!assignForm.managerName || !assignForm.managerEmail || !assignForm.interviewerEmail) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -148,16 +151,16 @@ const OpenPositions = () => {
       pos.id === selectedPositionId 
         ? { 
             ...pos, 
+            assignedManager: assignForm.managerName,
             managerEmail: assignForm.managerEmail,
             interviewerEmail: assignForm.interviewerEmail,
-            assignedManager: assignForm.managerEmail.split('@')[0] // Simple name extraction
           } 
         : pos
     ));
     
     toast.success("Assignment emails have been sent!");
     setShowAssignForm(false);
-    setAssignForm({ managerEmail: "", interviewerEmail: "" });
+    setAssignForm({ managerName: "", managerEmail: "", interviewerEmail: "" });
   };
 
   const handleUploadResume = (positionId: string) => {
@@ -223,8 +226,7 @@ const OpenPositions = () => {
                 <Textarea
                   value={newPosition.description}
                   onChange={(e) => setNewPosition({ ...newPosition, description: e.target.value })}
-                  placeholder="Enter detailed job description (max 500 words)"
-                  maxLength={500}
+                  placeholder="Enter detailed job description"
                   required
                 />
               </div>
@@ -295,7 +297,16 @@ const OpenPositions = () => {
               <h3 className="text-lg font-semibold mb-4">Assign Position</h3>
               <form onSubmit={handleAssignSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Hiring Manager Email</label>
+                  <label className="text-sm font-medium">Manager Name</label>
+                  <Input
+                    value={assignForm.managerName}
+                    onChange={(e) => setAssignForm({ ...assignForm, managerName: e.target.value })}
+                    placeholder="Enter manager name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Manager Email</label>
                   <Input
                     type="email"
                     value={assignForm.managerEmail}
@@ -321,7 +332,7 @@ const OpenPositions = () => {
                     variant="outline"
                     onClick={() => {
                       setShowAssignForm(false);
-                      setAssignForm({ managerEmail: "", interviewerEmail: "" });
+                      setAssignForm({ managerName: "", managerEmail: "", interviewerEmail: "" });
                     }}
                   >
                     Cancel
@@ -418,77 +429,6 @@ const OpenPositions = () => {
             </TableBody>
           </Table>
         </div>
-
-        {editingId && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-6 space-y-4"
-          >
-            <h3 className="text-lg font-semibold">Edit Position</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Job Description</label>
-                <Textarea
-                  className="mt-1"
-                  placeholder="Enter detailed job description (max 500 words)"
-                  maxLength={500}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Feedback</label>
-                <Textarea
-                  className="mt-1"
-                  placeholder="Enter feedback for candidate (max 100 words)"
-                  maxLength={100}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={() => setEditingId(null)}>Save Changes</Button>
-                <Button variant="outline" onClick={() => setEditingId(null)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {isHRTeam && (
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4">Managers</h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {managers.map((manager) => (
-                  <TableRow key={manager.id}>
-                    <TableCell>{manager.name}</TableCell>
-                    <TableCell>{manager.position}</TableCell>
-                    <TableCell>{manager.email}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditManager(manager)}
-                          title="Edit Manager"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
       </Card>
     </motion.div>
   );
