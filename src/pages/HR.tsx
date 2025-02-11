@@ -1,6 +1,6 @@
 
 import { motion } from "framer-motion";
-import { Users, FileText, ClipboardCheck, Download } from "lucide-react";
+import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -32,6 +33,14 @@ interface Application {
   status: "new" | "shortlisted" | "interviewing" | "rejected" | "hired";
   applicationDate: string;
   resumeUrl?: string;
+  assignedManager?: string;
+}
+
+interface Manager {
+  id: string;
+  name: string;
+  department: string;
+  assignedPositions: string[];
 }
 
 const HR = () => {
@@ -56,6 +65,24 @@ const HR = () => {
     },
   ]);
 
+  const [managers, setManagers] = useState<Manager[]>([
+    {
+      id: "1",
+      name: "Michael Scott",
+      department: "Technology",
+      assignedPositions: ["Senior Developer"],
+    },
+    {
+      id: "2",
+      name: "Sarah Johnson",
+      department: "Design",
+      assignedPositions: ["UX Designer"],
+    },
+  ]);
+
+  const [editingManager, setEditingManager] = useState<string | null>(null);
+  const [newManagerName, setNewManagerName] = useState("");
+
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
     setApplications(applications.map(app => 
       app.id === applicationId ? { ...app, status: newStatus } : app
@@ -76,10 +103,45 @@ const HR = () => {
 
   const downloadResume = (application: Application) => {
     if (application.resumeUrl) {
-      // In a real app, this would download the actual resume
       toast.success(`Downloading resume for ${application.candidateName}`);
     } else {
       toast.error("No resume available for this candidate");
+    }
+  };
+
+  const handleManagerEdit = (managerId: string) => {
+    const manager = managers.find(m => m.id === managerId);
+    if (manager) {
+      setEditingManager(managerId);
+      setNewManagerName(manager.name);
+    }
+  };
+
+  const saveManagerEdit = (managerId: string) => {
+    if (newManagerName.trim()) {
+      setManagers(managers.map(manager =>
+        manager.id === managerId ? { ...manager, name: newManagerName } : manager
+      ));
+      setEditingManager(null);
+      setNewManagerName("");
+      toast.success("Manager information updated successfully");
+    }
+  };
+
+  const assignToManager = (applicationId: string, managerId: string) => {
+    const manager = managers.find(m => m.id === managerId);
+    const application = applications.find(a => a.id === applicationId);
+    
+    if (manager && application) {
+      setManagers(managers.map(m =>
+        m.id === managerId
+          ? { ...m, assignedPositions: [...m.assignedPositions, application.position] }
+          : m
+      ));
+      setApplications(applications.map(app =>
+        app.id === applicationId ? { ...app, assignedManager: manager.name } : app
+      ));
+      toast.success(`Application assigned to ${manager.name}`);
     }
   };
 
@@ -113,6 +175,73 @@ const HR = () => {
 
           <Card className="mb-8">
             <CardHeader>
+              <CardTitle>Manager Assignment</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Manager Name</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Assigned Positions</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {managers.map((manager) => (
+                      <TableRow key={manager.id}>
+                        <TableCell>
+                          {editingManager === manager.id ? (
+                            <Input
+                              value={newManagerName}
+                              onChange={(e) => setNewManagerName(e.target.value)}
+                              className="max-w-[200px]"
+                            />
+                          ) : (
+                            manager.name
+                          )}
+                        </TableCell>
+                        <TableCell>{manager.department}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-2">
+                            {manager.assignedPositions.map((position, index) => (
+                              <Badge key={index} variant="secondary">
+                                {position}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {editingManager === manager.id ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => saveManagerEdit(manager.id)}
+                            >
+                              Save
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleManagerEdit(manager.id)}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
               <CardTitle>Applications Management</CardTitle>
             </CardHeader>
             <CardContent>
@@ -124,6 +253,7 @@ const HR = () => {
                       <TableHead>Position</TableHead>
                       <TableHead>Application Date</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Assigned Manager</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -162,6 +292,27 @@ const HR = () => {
                           </Select>
                         </TableCell>
                         <TableCell>
+                          <Select
+                            value={application.assignedManager}
+                            onValueChange={(value) => 
+                              assignToManager(application.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Assign Manager">
+                                {application.assignedManager || "Assign Manager"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {managers.map((manager) => (
+                                <SelectItem key={manager.id} value={manager.id}>
+                                  {manager.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
