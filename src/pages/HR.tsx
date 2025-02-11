@@ -233,153 +233,6 @@ const HR = () => {
 
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Hiring Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidate</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Interview Stage</TableHead>
-                      <TableHead>Next Steps</TableHead>
-                      <TableHead>Hiring Manager</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {applications.map((application) => (
-                      <TableRow key={application.id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{application.candidateName}</div>
-                            <div className="text-sm text-gray-500">{application.email}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{application.position}</TableCell>
-                        <TableCell>
-                          <Select
-                            defaultValue={application.status}
-                            onValueChange={(value: Application['status']) => 
-                              handleStatusChange(application.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue>
-                                <Badge variant={getStatusBadgeVariant(application.status)}>
-                                  {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                                </Badge>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="new">New</SelectItem>
-                              <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                              <SelectItem value="interviewing">Interviewing</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                              <SelectItem value="hired">Hired</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          {application.status === "hired" ? (
-                            <Badge variant="default">Start Onboarding</Badge>
-                          ) : (
-                            <Badge variant="secondary">Schedule Interview</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={application.assignedManager}
-                            onValueChange={(value) => 
-                              assignToManager(application.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue placeholder="Assign Manager">
-                                {application.assignedManager || "Assign Manager"}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {managers.map((manager) => (
-                                <SelectItem key={manager.id} value={manager.id}>
-                                  {manager.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => downloadResume(application)}
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Resume
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Onboarding Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Assigned To</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {onboardingTasks.map((task) => (
-                      <TableRow key={task.id}>
-                        <TableCell>{task.task}</TableCell>
-                        <TableCell>{task.assignedTo}</TableCell>
-                        <TableCell>{task.dueDate}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Checkbox
-                              checked={task.completed}
-                              onCheckedChange={() => toggleTaskCompletion(task.id)}
-                              id={`task-${task.id}`}
-                            />
-                            <label
-                              htmlFor={`task-${task.id}`}
-                              className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {task.completed ? "Completed" : "Pending"}
-                            </label>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm">
-                            <ListTodo className="w-4 h-4 mr-2" />
-                            View Details
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-8">
-            <CardHeader>
               <CardTitle>Manager Assignment</CardTitle>
             </CardHeader>
             <CardContent>
@@ -453,6 +306,57 @@ const HR = () => {
                               Edit
                             </Button>
                           )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Onboarding Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Task</TableHead>
+                      <TableHead>Assigned To</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {onboardingTasks.map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell>{task.task}</TableCell>
+                        <TableCell>{task.assignedTo}</TableCell>
+                        <TableCell>{task.dueDate}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Checkbox
+                              checked={task.completed}
+                              onCheckedChange={() => toggleTaskCompletion(task.id)}
+                              id={`task-${task.id}`}
+                            />
+                            <label
+                              htmlFor={`task-${task.id}`}
+                              className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {task.completed ? "Completed" : "Pending"}
+                            </label>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm">
+                            <ListTodo className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
