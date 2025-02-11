@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus } from "lucide-react";
+import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus, CheckCircle2, ListTodo } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -41,6 +42,14 @@ interface Manager {
   email: string;
   department: string;
   assignedPositions: string[];
+}
+
+interface OnboardingTask {
+  id: string;
+  task: string;
+  completed: boolean;
+  assignedTo: string;
+  dueDate: string;
 }
 
 const HR = () => {
@@ -85,6 +94,30 @@ const HR = () => {
   const [editingManager, setEditingManager] = useState<string | null>(null);
   const [newManagerName, setNewManagerName] = useState("");
   const [newManagerEmail, setNewManagerEmail] = useState("");
+
+  const [onboardingTasks, setOnboardingTasks] = useState<OnboardingTask[]>([
+    {
+      id: "1",
+      task: "Complete paperwork",
+      completed: false,
+      assignedTo: "HR Team",
+      dueDate: "2024-02-20",
+    },
+    {
+      id: "2",
+      task: "Set up workstation",
+      completed: true,
+      assignedTo: "IT Team",
+      dueDate: "2024-02-19",
+    },
+    {
+      id: "3",
+      task: "Team introduction",
+      completed: false,
+      assignedTo: "Department Manager",
+      dueDate: "2024-02-21",
+    },
+  ]);
 
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
     setApplications(applications.map(app => 
@@ -154,6 +187,17 @@ const HR = () => {
     }
   };
 
+  const toggleTaskCompletion = (taskId: string) => {
+    setOnboardingTasks(tasks =>
+      tasks.map(task =>
+        task.id === taskId
+          ? { ...task, completed: !task.completed }
+          : task
+      )
+    );
+    toast.success("Task status updated");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -164,7 +208,7 @@ const HR = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
             <MetricCard
               title="Total Applications"
               value={applications.length.toString()}
@@ -176,11 +220,163 @@ const HR = () => {
               icon={<ClipboardCheck className="w-6 h-6 text-primary" />}
             />
             <MetricCard
+              title="New Hires"
+              value="5"
+              icon={<UserPlus className="w-6 h-6 text-primary" />}
+            />
+            <MetricCard
               title="Total Employees"
               value="248"
               icon={<Users className="w-6 h-6 text-primary" />}
             />
           </div>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Hiring Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Candidate</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Interview Stage</TableHead>
+                      <TableHead>Next Steps</TableHead>
+                      <TableHead>Hiring Manager</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {applications.map((application) => (
+                      <TableRow key={application.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{application.candidateName}</div>
+                            <div className="text-sm text-gray-500">{application.email}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{application.position}</TableCell>
+                        <TableCell>
+                          <Select
+                            defaultValue={application.status}
+                            onValueChange={(value: Application['status']) => 
+                              handleStatusChange(application.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue>
+                                <Badge variant={getStatusBadgeVariant(application.status)}>
+                                  {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                                </Badge>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="new">New</SelectItem>
+                              <SelectItem value="shortlisted">Shortlisted</SelectItem>
+                              <SelectItem value="interviewing">Interviewing</SelectItem>
+                              <SelectItem value="rejected">Rejected</SelectItem>
+                              <SelectItem value="hired">Hired</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          {application.status === "hired" ? (
+                            <Badge variant="default">Start Onboarding</Badge>
+                          ) : (
+                            <Badge variant="secondary">Schedule Interview</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={application.assignedManager}
+                            onValueChange={(value) => 
+                              assignToManager(application.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue placeholder="Assign Manager">
+                                {application.assignedManager || "Assign Manager"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {managers.map((manager) => (
+                                <SelectItem key={manager.id} value={manager.id}>
+                                  {manager.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadResume(application)}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Resume
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Onboarding Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Task</TableHead>
+                      <TableHead>Assigned To</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {onboardingTasks.map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell>{task.task}</TableCell>
+                        <TableCell>{task.assignedTo}</TableCell>
+                        <TableCell>{task.dueDate}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Checkbox
+                              checked={task.completed}
+                              onCheckedChange={() => toggleTaskCompletion(task.id)}
+                              id={`task-${task.id}`}
+                            />
+                            <label
+                              htmlFor={`task-${task.id}`}
+                              className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {task.completed ? "Completed" : "Pending"}
+                            </label>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm">
+                            <ListTodo className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="mb-8">
             <CardHeader>
@@ -257,96 +453,6 @@ const HR = () => {
                               Edit
                             </Button>
                           )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Applications Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidate</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Application Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Assigned Manager</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {applications.map((application) => (
-                      <TableRow key={application.id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{application.candidateName}</div>
-                            <div className="text-sm text-gray-500">{application.email}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{application.position}</TableCell>
-                        <TableCell>{application.applicationDate}</TableCell>
-                        <TableCell>
-                          <Select
-                            defaultValue={application.status}
-                            onValueChange={(value: Application['status']) => 
-                              handleStatusChange(application.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue>
-                                <Badge variant={getStatusBadgeVariant(application.status)}>
-                                  {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                                </Badge>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="new">New</SelectItem>
-                              <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                              <SelectItem value="interviewing">Interviewing</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                              <SelectItem value="hired">Hired</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={application.assignedManager}
-                            onValueChange={(value) => 
-                              assignToManager(application.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue placeholder="Assign Manager">
-                                {application.assignedManager || "Assign Manager"}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {managers.map((manager) => (
-                                <SelectItem key={manager.id} value={manager.id}>
-                                  {manager.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => downloadResume(application)}
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Resume
-                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
