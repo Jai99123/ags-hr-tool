@@ -18,7 +18,12 @@ const Header = () => {
       className="py-4 px-6 backdrop-blur-sm bg-white/50 fixed top-0 left-0 right-0 z-50 flex justify-between items-center"
     >
       <div className="flex items-center gap-6">
-        <Link to="/">
+        <Link to="/" className="flex items-center gap-2">
+          <img 
+            src="/lovable-uploads/c4db0749-022a-4ae7-8070-69be4b8aa383.png" 
+            alt="AGS Logo" 
+            className="h-8 w-auto"
+          />
           <h1 className="text-xl font-semibold">AGS HR Dashboard</h1>
         </Link>
         <nav className="hidden md:flex items-center gap-4">
