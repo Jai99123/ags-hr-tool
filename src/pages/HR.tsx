@@ -68,9 +68,9 @@ const HR = () => {
     switch (status) {
       case "new": return "default";
       case "shortlisted": return "secondary";
-      case "interviewing": return "warning";
+      case "interviewing": return "secondary";
       case "rejected": return "destructive";
-      case "hired": return "success";
+      case "hired": return "default";
       default: return "default";
     }
   };
@@ -94,8 +94,6 @@ const HR = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <h1 className="text-3xl font-bold mb-8">HR Dashboard</h1>
-          
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
             <MetricCard
               title="Total Applications"
