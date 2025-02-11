@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Users, FileText, ClipboardCheck, UserPlus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -107,6 +106,17 @@ const HR = () => {
       ]
     }
   ]);
+
+  const [isAddingCandidate, setIsAddingCandidate] = useState(false);
+  const [newCandidate, setNewCandidate] = useState<Omit<Candidate, 'id' | 'documents'>>({
+    name: "",
+    email: "",
+    phone: "",
+    position: "",
+    status: "new",
+    joiningDate: "",
+    notes: ""
+  });
 
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
     setApplications(applications.map(app => 
@@ -249,6 +259,31 @@ const HR = () => {
     console.log('Sending email to:', managerEmail);
   };
 
+  const handleAddCandidate = () => {
+    if (newCandidate.name && newCandidate.email && newCandidate.phone && newCandidate.position) {
+      const candidate: Candidate = {
+        id: `${candidates.length + 1}`,
+        ...newCandidate,
+        documents: []
+      };
+
+      setCandidates([...candidates, candidate]);
+      setIsAddingCandidate(false);
+      setNewCandidate({
+        name: "",
+        email: "",
+        phone: "",
+        position: "",
+        status: "new",
+        joiningDate: "",
+        notes: ""
+      });
+      toast.success("Candidate added successfully");
+    } else {
+      toast.error("Please fill in all required fields");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -334,6 +369,22 @@ const HR = () => {
                   onUpdateCandidateData={setNewCandidateData}
                   onDocumentUpload={handleDocumentUpload}
                   onDocumentDownload={downloadDocument}
+                  isAddingCandidate={isAddingCandidate}
+                  newCandidate={newCandidate}
+                  onAddCandidate={handleAddCandidate}
+                  onUpdateNewCandidate={setNewCandidate}
+                  onCancelAdd={() => {
+                    setIsAddingCandidate(false);
+                    setNewCandidate({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      position: "",
+                      status: "new",
+                      joiningDate: "",
+                      notes: ""
+                    });
+                  }}
                 />
               </div>
             </CardContent>
@@ -345,4 +396,3 @@ const HR = () => {
 };
 
 export default HR;
-

@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Edit } from "lucide-react";
+import { FileText, Edit, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -45,12 +45,17 @@ interface CandidateData {
 interface CandidateTableProps {
   candidates: Candidate[];
   editingCandidate: string | null;
-  newCandidateData: CandidateData;
+  newCandidateData: any;
   onEdit: (candidateId: string) => void;
   onSave: (candidateId: string) => void;
-  onUpdateCandidateData: (data: CandidateData) => void;
+  onUpdateCandidateData: (data: any) => void;
   onDocumentUpload: (candidateId: string, documentType: "PAN CARD" | "AADHAR CARD" | "Resume") => void;
   onDocumentDownload: (document: Document) => void;
+  isAddingCandidate: boolean;
+  newCandidate: Omit<Candidate, 'id' | 'documents'>;
+  onAddCandidate: () => void;
+  onUpdateNewCandidate: (candidate: Omit<Candidate, 'id' | 'documents'>) => void;
+  onCancelAdd: () => void;
 }
 
 const CandidateTable = ({
@@ -61,7 +66,12 @@ const CandidateTable = ({
   onSave,
   onUpdateCandidateData,
   onDocumentUpload,
-  onDocumentDownload
+  onDocumentDownload,
+  isAddingCandidate,
+  newCandidate,
+  onAddCandidate,
+  onUpdateNewCandidate,
+  onCancelAdd
 }: CandidateTableProps) => {
   return (
     <Table>
@@ -76,6 +86,93 @@ const CandidateTable = ({
         </TableRow>
       </TableHeader>
       <TableBody>
+        {isAddingCandidate && (
+          <TableRow>
+            <TableCell>
+              <Input
+                value={newCandidate.name}
+                onChange={(e) => onUpdateNewCandidate({ ...newCandidate, name: e.target.value })}
+                className="max-w-[200px]"
+                placeholder="Full Name"
+              />
+            </TableCell>
+            <TableCell>
+              <div className="space-y-2">
+                <Input
+                  value={newCandidate.email}
+                  onChange={(e) => onUpdateNewCandidate({ ...newCandidate, email: e.target.value })}
+                  className="max-w-[200px]"
+                  placeholder="Email"
+                  type="email"
+                />
+                <Input
+                  value={newCandidate.phone}
+                  onChange={(e) => onUpdateNewCandidate({ ...newCandidate, phone: e.target.value })}
+                  className="max-w-[200px]"
+                  placeholder="Phone"
+                  type="tel"
+                />
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="space-y-2">
+                <Input
+                  value={newCandidate.position}
+                  onChange={(e) => onUpdateNewCandidate({ ...newCandidate, position: e.target.value })}
+                  className="max-w-[200px]"
+                  placeholder="Position"
+                />
+                <Input
+                  value={newCandidate.joiningDate}
+                  onChange={(e) => onUpdateNewCandidate({ ...newCandidate, joiningDate: e.target.value })}
+                  className="max-w-[200px]"
+                  type="date"
+                />
+              </div>
+            </TableCell>
+            <TableCell>
+              <Select
+                value={newCandidate.status}
+                onValueChange={(value: "new" | "selected" | "rejected") =>
+                  onUpdateNewCandidate({ ...newCandidate, status: value })
+                }
+              >
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="selected">Selected</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </TableCell>
+            <TableCell>
+              <div className="text-sm text-gray-500">
+                Documents can be added after creating the candidate
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddCandidate}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onCancelAdd}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
         {candidates.map((candidate) => (
           <TableRow key={candidate.id}>
             <TableCell>
