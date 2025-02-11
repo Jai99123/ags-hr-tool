@@ -34,6 +34,12 @@ interface Position {
   feedback?: string;
 }
 
+interface NewPosition {
+  jobId: string;
+  title: string;
+  description: string;
+}
+
 const OpenPositions = () => {
   const [positions, setPositions] = useState<Position[]>([
     {
@@ -47,6 +53,15 @@ const OpenPositions = () => {
     },
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showNewPositionForm, setShowNewPositionForm] = useState(false);
+  const [newPosition, setNewPosition] = useState<NewPosition>({
+    jobId: "",
+    title: "",
+    description: "",
+  });
+
+  // Mock HR team check - in real app, this would come from auth
+  const isHRTeam = true; // This would be connected to your auth state
 
   const handleStatusChange = (positionId: string, status: "active" | "inactive") => {
     setPositions(positions.map(pos => 
@@ -63,6 +78,23 @@ const OpenPositions = () => {
       pos.id === positionId ? { ...pos, candidateStatus: status } : pos
     ));
     toast.success("Candidate status updated");
+  };
+
+  const handleNewPositionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const id = (positions.length + 1).toString();
+    setPositions([
+      ...positions,
+      {
+        ...newPosition,
+        id,
+        status: "active",
+        assignedManager: "",
+      },
+    ]);
+    setNewPosition({ jobId: "", title: "", description: "" });
+    setShowNewPositionForm(false);
+    toast.success("New position added successfully!");
   };
 
   const handleApply = (positionId: string) => {
@@ -86,8 +118,65 @@ const OpenPositions = () => {
       <Card className="p-6 backdrop-blur-sm bg-card/90">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Open Positions</h2>
-          <Button variant="outline">Add New Position</Button>
+          {isHRTeam && (
+            <Button 
+              variant="outline"
+              onClick={() => setShowNewPositionForm(true)}
+            >
+              New Position
+            </Button>
+          )}
         </div>
+
+        {showNewPositionForm && isHRTeam && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-8 p-4 border rounded-lg"
+          >
+            <h3 className="text-lg font-semibold mb-4">Create New Position</h3>
+            <form onSubmit={handleNewPositionSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Job ID</label>
+                <Input
+                  value={newPosition.jobId}
+                  onChange={(e) => setNewPosition({ ...newPosition, jobId: e.target.value })}
+                  placeholder="Enter Job ID (e.g., DEV-002)"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Title</label>
+                <Input
+                  value={newPosition.title}
+                  onChange={(e) => setNewPosition({ ...newPosition, title: e.target.value })}
+                  placeholder="Enter position title"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Job Description</label>
+                <Textarea
+                  value={newPosition.description}
+                  onChange={(e) => setNewPosition({ ...newPosition, description: e.target.value })}
+                  placeholder="Enter detailed job description (max 500 words)"
+                  maxLength={500}
+                  required
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit">Post Position</Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => setShowNewPositionForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+        )}
 
         <div className="overflow-x-auto">
           <Table>
