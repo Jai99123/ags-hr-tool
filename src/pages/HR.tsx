@@ -1,16 +1,9 @@
+
 import { motion } from "framer-motion";
-import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus, Link, Upload, Mail } from "lucide-react";
+import { Users, FileText, ClipboardCheck, Edit, UserPlus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -29,7 +22,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -50,23 +42,6 @@ interface Manager {
   email: string;
   department: string;
   assignedPositions: string[];
-}
-
-interface CandidateOnboarding {
-  id: string;
-  fullName: string;
-  email: string;
-  phoneNumber: string;
-  position: string;
-  hiringStatus: "pending" | "confirmed" | "completed";
-  joiningDate: string;
-  documents: {
-    idProof?: File;
-    experienceCertificates?: File;
-    educationalQualifications?: File;
-  };
-  onboardingLink?: string;
-  documentStatus: "not_submitted" | "submitted" | "verified" | "completed";
 }
 
 const HR = () => {
@@ -111,44 +86,6 @@ const HR = () => {
   const [editingManager, setEditingManager] = useState<string | null>(null);
   const [newManagerName, setNewManagerName] = useState("");
   const [newManagerEmail, setNewManagerEmail] = useState("");
-
-  const [candidateOnboarding, setCandidateOnboarding] = useState<CandidateOnboarding[]>([
-    {
-      id: "1",
-      fullName: "John Doe",
-      email: "john@example.com",
-      phoneNumber: "+1234567890",
-      position: "Senior Developer",
-      hiringStatus: "pending",
-      joiningDate: "2024-03-01",
-      documents: {},
-      documentStatus: "not_submitted"
-    },
-    {
-      id: "2",
-      fullName: "Jane Smith",
-      email: "jane@example.com",
-      phoneNumber: "+1987654321",
-      position: "UX Designer",
-      hiringStatus: "confirmed",
-      joiningDate: "2024-03-15",
-      documents: {},
-      documentStatus: "submitted"
-    }
-  ]);
-
-  const [emailContent, setEmailContent] = useState<string>(`Dear [Candidate Name],
-
-We hope this email finds you well. This is regarding your onboarding process at our company. Please find the necessary information and next steps below.
-
-[Customized Content Here]
-
-Please ensure to complete all the required steps and submit the necessary documents through the provided link. If you have any questions, don't hesitate to reach out to the HR team.
-
-Best regards,
-HR Team`);
-
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
     setApplications(applications.map(app => 
@@ -215,55 +152,6 @@ HR Team`);
         app.id === applicationId ? { ...app, assignedManager: manager.name } : app
       ));
       toast.success(`Application assigned to ${manager.name}`);
-    }
-  };
-
-  const generateOnboardingLink = (candidateId: string) => {
-    const uniqueLink = `https://onboarding.company.com/${candidateId}-${Date.now()}`;
-    setCandidateOnboarding(candidates =>
-      candidates.map(candidate =>
-        candidate.id === candidateId
-          ? { ...candidate, onboardingLink: uniqueLink }
-          : candidate
-      )
-    );
-    toast.success("Onboarding link generated successfully");
-  };
-
-  const updateDocumentStatus = (candidateId: string, status: CandidateOnboarding['documentStatus']) => {
-    setCandidateOnboarding(candidates =>
-      candidates.map(candidate =>
-        candidate.id === candidateId
-          ? { ...candidate, documentStatus: status }
-          : candidate
-      )
-    );
-    toast.success("Document status updated successfully");
-  };
-
-  const sendNotification = (candidateId: string, type: 'document' | 'reminder') => {
-    const candidate = candidateOnboarding.find(c => c.id === candidateId);
-    if (candidate) {
-      toast.success(`${type === 'document' ? 'Document submission confirmation' : 'Joining reminder'} sent to ${candidate.email}`);
-    }
-  };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.type === "image/jpeg" || file.type === "image/png") {
-        setSelectedFile(file);
-        toast.success("File uploaded successfully");
-      } else {
-        toast.error("Please upload only JPG or PNG files");
-      }
-    }
-  };
-
-  const handleEmailSend = (candidateId: string, content: string) => {
-    const candidate = candidateOnboarding.find(c => c.id === candidateId);
-    if (candidate) {
-      toast.success(`Email sent to ${candidate.email}`);
     }
   };
 
@@ -383,162 +271,6 @@ HR Team`);
               </div>
             </CardContent>
           </Card>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Candidate Onboarding</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidate Details</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Hiring Status</TableHead>
-                      <TableHead>Joining Date</TableHead>
-                      <TableHead>Documents</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {candidateOnboarding.map((candidate) => (
-                      <TableRow key={candidate.id}>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="font-medium">{candidate.fullName}</div>
-                            <div className="text-sm text-muted-foreground">{candidate.email}</div>
-                            <div className="text-sm text-muted-foreground">{candidate.phoneNumber}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{candidate.position}</TableCell>
-                        <TableCell>
-                          <Select
-                            value={candidate.hiringStatus}
-                            onValueChange={(value: CandidateOnboarding['hiringStatus']) => {
-                              setCandidateOnboarding(candidates =>
-                                candidates.map(c =>
-                                  c.id === candidate.id
-                                    ? { ...c, hiringStatus: value }
-                                    : c
-                                )
-                              );
-                            }}
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>{candidate.joiningDate}</TableCell>
-                        <TableCell>
-                          <Select
-                            value={candidate.documentStatus}
-                            onValueChange={(value: CandidateOnboarding['documentStatus']) => 
-                              updateDocumentStatus(candidate.id, value)
-                            }
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="not_submitted">Not Submitted</SelectItem>
-                              <SelectItem value="submitted">Submitted</SelectItem>
-                              <SelectItem value="verified">Verified</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  <Link className="w-4 h-4 mr-2" />
-                                  Generate Link
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Upload Document</DialogTitle>
-                                  <DialogDescription>
-                                    Upload a JPG or PNG file to attach to the onboarding link.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <Input
-                                    type="file"
-                                    accept=".jpg,.jpeg,.png"
-                                    onChange={handleFileUpload}
-                                    className="cursor-pointer"
-                                  />
-                                  {selectedFile && (
-                                    <p className="text-sm text-muted-foreground">
-                                      Selected file: {selectedFile.name}
-                                    </p>
-                                  )}
-                                  <Button
-                                    onClick={() => {
-                                      generateOnboardingLink(candidate.id);
-                                      toast.success("Link generated with attached document");
-                                    }}
-                                  >
-                                    Generate Link with Document
-                                  </Button>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  <Mail className="w-4 h-4 mr-2" />
-                                  Send Email
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
-                                <DialogHeader>
-                                  <DialogTitle>Edit Email Content</DialogTitle>
-                                  <DialogDescription>
-                                    Customize the email content before sending.
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <Textarea
-                                    value={emailContent}
-                                    onChange={(e) => setEmailContent(e.target.value)}
-                                    className="min-h-[200px]"
-                                  />
-                                  <Button
-                                    onClick={() => {
-                                      handleEmailSend(candidate.id, emailContent);
-                                    }}
-                                  >
-                                    Send Email
-                                  </Button>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
         </motion.div>
       </main>
     </div>
@@ -546,3 +278,4 @@ HR Team`);
 };
 
 export default HR;
+
