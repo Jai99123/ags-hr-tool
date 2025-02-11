@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,21 +12,23 @@ interface Manager {
   assignedPositions: string[];
 }
 
+type NewManager = {
+  name: string;
+  email: string;
+  department: string;
+  position: string;
+}
+
 interface ManagerTableProps {
   managers: Manager[];
   editingManager: string | null;
   newManagerName: string;
   newManagerEmail: string;
   isAddingManager: boolean;
-  newManager: {
-    name: string;
-    email: string;
-    department: string;
-    position: string;
-  };
+  newManager: NewManager;
   onEdit: (managerId: string) => void;
   onSave: (managerId: string) => void;
-  onNewManagerChange: (field: keyof typeof newManager, value: string) => void;
+  onNewManagerChange: (field: keyof NewManager, value: string) => void;
   onAddManager: () => void;
   onCancelAdd: () => void;
   onEmailManager: (email: string) => void;
@@ -195,4 +196,3 @@ const ManagerTable = ({
 };
 
 export default ManagerTable;
-

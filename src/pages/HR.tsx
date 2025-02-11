@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Users, FileText, ClipboardCheck, UserPlus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -355,8 +356,16 @@ const HR = () => {
           </Card>
 
           <Card className="mb-8">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Hiring & Onboarding</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddingCandidate(true)}
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add New
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
