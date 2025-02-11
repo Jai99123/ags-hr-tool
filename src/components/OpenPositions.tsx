@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "./ui/card";
@@ -194,7 +195,7 @@ const OpenPositions = () => {
     >
       <Card className="p-6 backdrop-blur-sm bg-card/90">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">Open Positions</h2>
+          <h2 className="text-2xl font-semibold">AGS Career</h2>
           {isHRTeam && (
             <Button 
               variant="outline"
