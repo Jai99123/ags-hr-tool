@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, FileText, ClipboardCheck, Edit, UserPlus, Upload, Download, Calendar, Phone, Mail } from "lucide-react";
+import { Users, FileText, ClipboardCheck, Edit, UserPlus, Mail } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
@@ -11,13 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,6 +127,14 @@ const HR = () => {
     notes: ""
   });
 
+  const [isAddingManager, setIsAddingManager] = useState(false);
+  const [newManager, setNewManager] = useState({
+    name: "",
+    email: "",
+    department: "",
+    position: ""
+  });
+
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
     setApplications(applications.map(app => 
       app.id === applicationId ? { ...app, status: newStatus } : app
@@ -247,6 +248,25 @@ const HR = () => {
     console.log('Sending email to:', managerEmail);
   };
 
+  const handleAddManager = () => {
+    if (newManager.name && newManager.email && newManager.department && newManager.position) {
+      const manager = {
+        id: `${managers.length + 1}`,
+        name: newManager.name,
+        email: newManager.email,
+        department: newManager.department,
+        assignedPositions: [newManager.position]
+      };
+
+      setManagers([...managers, manager]);
+      setIsAddingManager(false);
+      setNewManager({ name: "", email: "", department: "", position: "" });
+      toast.success("Manager added successfully");
+    } else {
+      toast.error("Please fill in all fields");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -281,8 +301,16 @@ const HR = () => {
           </div>
 
           <Card className="mb-8">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Manager Assignment</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddingManager(true)}
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Manager
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -297,6 +325,64 @@ const HR = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {isAddingManager && (
+                      <TableRow>
+                        <TableCell>
+                          <Input
+                            placeholder="Manager name"
+                            value={newManager.name}
+                            onChange={(e) => setNewManager({ ...newManager, name: e.target.value })}
+                            className="max-w-[200px]"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            placeholder="Email address"
+                            type="email"
+                            value={newManager.email}
+                            onChange={(e) => setNewManager({ ...newManager, email: e.target.value })}
+                            className="max-w-[200px]"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            placeholder="Department"
+                            value={newManager.department}
+                            onChange={(e) => setNewManager({ ...newManager, department: e.target.value })}
+                            className="max-w-[200px]"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            placeholder="Position"
+                            value={newManager.position}
+                            onChange={(e) => setNewManager({ ...newManager, position: e.target.value })}
+                            className="max-w-[200px]"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleAddManager}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setIsAddingManager(false);
+                                setNewManager({ name: "", email: "", department: "", position: "" });
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
                     {managers.map((manager) => (
                       <TableRow key={manager.id}>
                         <TableCell>
