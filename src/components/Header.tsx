@@ -19,7 +19,7 @@ const Header = () => {
     >
       <div className="flex items-center gap-6">
         <Link to="/">
-          <h1 className="text-xl font-semibold">HR Dashboard</h1>
+          <h1 className="text-xl font-semibold">AGS HR Dashboard</h1>
         </Link>
         <nav className="hidden md:flex items-center gap-4">
           <Link to="/hr">
