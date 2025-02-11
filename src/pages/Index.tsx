@@ -6,16 +6,21 @@ import MetricCard from "@/components/MetricCard";
 import IdeasForm from "@/components/IdeasForm";
 import Header from "@/components/Header";
 import OpenPositions from "@/components/OpenPositions";
+import LearningDashboard from "@/components/learning/LearningDashboard";
 
 const Index = () => {
   const [showPositions, setShowPositions] = useState(false);
+  const [showLearning, setShowLearning] = useState(false);
 
   const handlePositionsClick = () => {
     setShowPositions(true);
+    setShowLearning(false);
     console.log("Viewing positions");
   };
 
   const handleLearnersClick = () => {
+    setShowLearning(true);
+    setShowPositions(false);
     console.log("Viewing learning resources");
   };
 
@@ -53,6 +58,10 @@ const Index = () => {
         {showPositions ? (
           <div className="mt-8">
             <OpenPositions />
+          </div>
+        ) : showLearning ? (
+          <div className="mt-8">
+            <LearningDashboard />
           </div>
         ) : (
           <div className="mt-8">
