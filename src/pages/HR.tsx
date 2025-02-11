@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus, CheckCircle2, ListTodo, Link, Upload, Mail } from "lucide-react";
+import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus, Link, Upload, Mail } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
@@ -21,7 +21,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -42,14 +41,6 @@ interface Manager {
   email: string;
   department: string;
   assignedPositions: string[];
-}
-
-interface OnboardingTask {
-  id: string;
-  task: string;
-  completed: boolean;
-  assignedTo: string;
-  dueDate: string;
 }
 
 interface CandidateOnboarding {
@@ -111,30 +102,6 @@ const HR = () => {
   const [editingManager, setEditingManager] = useState<string | null>(null);
   const [newManagerName, setNewManagerName] = useState("");
   const [newManagerEmail, setNewManagerEmail] = useState("");
-
-  const [onboardingTasks, setOnboardingTasks] = useState<OnboardingTask[]>([
-    {
-      id: "1",
-      task: "Complete paperwork",
-      completed: false,
-      assignedTo: "HR Team",
-      dueDate: "2024-02-20",
-    },
-    {
-      id: "2",
-      task: "Set up workstation",
-      completed: true,
-      assignedTo: "IT Team",
-      dueDate: "2024-02-19",
-    },
-    {
-      id: "3",
-      task: "Team introduction",
-      completed: false,
-      assignedTo: "Department Manager",
-      dueDate: "2024-02-21",
-    },
-  ]);
 
   const [candidateOnboarding, setCandidateOnboarding] = useState<CandidateOnboarding[]>([
     {
@@ -227,17 +194,6 @@ const HR = () => {
       ));
       toast.success(`Application assigned to ${manager.name}`);
     }
-  };
-
-  const toggleTaskCompletion = (taskId: string) => {
-    setOnboardingTasks(tasks =>
-      tasks.map(task =>
-        task.id === taskId
-          ? { ...task, completed: !task.completed }
-          : task
-      )
-    );
-    toast.success("Task status updated");
   };
 
   const generateOnboardingLink = (candidateId: string) => {
@@ -378,57 +334,6 @@ const HR = () => {
                               Edit
                             </Button>
                           )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Onboarding Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Assigned To</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {onboardingTasks.map((task) => (
-                      <TableRow key={task.id}>
-                        <TableCell>{task.task}</TableCell>
-                        <TableCell>{task.assignedTo}</TableCell>
-                        <TableCell>{task.dueDate}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Checkbox
-                              checked={task.completed}
-                              onCheckedChange={() => toggleTaskCompletion(task.id)}
-                              id={`task-${task.id}`}
-                            />
-                            <label
-                              htmlFor={`task-${task.id}`}
-                              className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {task.completed ? "Completed" : "Pending"}
-                            </label>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm">
-                            <ListTodo className="w-4 h-4 mr-2" />
-                            View Details
-                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
