@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -190,6 +191,14 @@ const CandidateTable = ({
                     onClick={() => onDocumentUpload(candidate.id, "PAN CARD")}
                   >
                     Upload PAN
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => onDocumentUpload(candidate.id, "AADHAR CARD")}
+                  >
+                    Upload Aadhar
                   </Button>
                 </div>
               </div>
