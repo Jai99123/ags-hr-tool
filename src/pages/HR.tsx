@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Users, FileText, ClipboardCheck, Download } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
-import OpenPositions from "@/components/OpenPositions";
 import MetricCard from "@/components/MetricCard";
 import {
   Table,
@@ -177,15 +176,6 @@ const HR = () => {
                   </TableBody>
                 </Table>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Open Positions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <OpenPositions />
             </CardContent>
           </Card>
         </motion.div>
