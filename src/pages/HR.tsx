@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Users, FileText, ClipboardCheck, Edit, UserPlus, Upload, Download, Calendar, Phone, Mail } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -141,25 +142,6 @@ const HR = () => {
     toast.success("Application status updated successfully");
   };
 
-  const getStatusBadgeVariant = (status: Application['status']) => {
-    switch (status) {
-      case "new": return "default";
-      case "shortlisted": return "secondary";
-      case "interviewing": return "secondary";
-      case "rejected": return "destructive";
-      case "hired": return "default";
-      default: return "default";
-    }
-  };
-
-  const downloadResume = (application: Application) => {
-    if (application.resumeUrl) {
-      toast.success(`Downloading resume for ${application.candidateName}`);
-    } else {
-      toast.error("No resume available for this candidate");
-    }
-  };
-
   const handleManagerEdit = (managerId: string) => {
     const manager = managers.find(m => m.id === managerId);
     if (manager) {
@@ -185,23 +167,6 @@ const HR = () => {
     }
   };
 
-  const assignToManager = (applicationId: string, managerId: string) => {
-    const manager = managers.find(m => m.id === managerId);
-    const application = applications.find(a => a.id === applicationId);
-    
-    if (manager && application) {
-      setManagers(managers.map(m =>
-        m.id === managerId
-          ? { ...m, assignedPositions: [...m.assignedPositions, application.position] }
-          : m
-      ));
-      setApplications(applications.map(app =>
-        app.id === applicationId ? { ...app, assignedManager: manager.name } : app
-      ));
-      toast.success(`Application assigned to ${manager.name}`);
-    }
-  };
-
   const handleCandidateEdit = (candidateId: string) => {
     const candidate = candidates.find(c => c.id === candidateId);
     if (candidate) {
@@ -211,7 +176,8 @@ const HR = () => {
         email: candidate.email,
         phone: candidate.phone,
         position: candidate.position,
-        joiningDate: candidate.joiningDate
+        joiningDate: candidate.joiningDate,
+        notes: candidate.notes || ""
       });
     }
   };
@@ -257,11 +223,6 @@ const HR = () => {
     toast.success(`Downloading ${document.name}`);
   };
 
-  const sendEmailToCandidate = (candidate: Candidate) => {
-    const documentLink = `https://your-domain.com/documents/${candidate.id}`;
-    toast.success(`Email sent to ${candidate.email} with document upload link: ${documentLink}`);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -294,230 +255,6 @@ const HR = () => {
               icon={<Users className="w-6 h-6 text-primary" />}
             />
           </div>
-
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Candidate Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Contact Info</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Joining Date</TableHead>
-                      <TableHead>Notes</TableHead>
-                      <TableHead>Documents</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {candidates.map((candidate) => (
-                      <TableRow key={candidate.id}>
-                        <TableCell>
-                          {editingCandidate === candidate.id ? (
-                            <Input
-                              value={newCandidateData.name}
-                              onChange={(e) => setNewCandidateData({
-                                ...newCandidateData,
-                                name: e.target.value
-                              })}
-                              className="max-w-[200px]"
-                              placeholder="Candidate name"
-                            />
-                          ) : (
-                            candidate.name
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {editingCandidate === candidate.id ? (
-                            <div className="space-y-2">
-                              <Input
-                                value={newCandidateData.email}
-                                onChange={(e) => setNewCandidateData({
-                                  ...newCandidateData,
-                                  email: e.target.value
-                                })}
-                                className="max-w-[200px]"
-                                placeholder="Email"
-                                type="email"
-                              />
-                              <Input
-                                value={newCandidateData.phone}
-                                onChange={(e) => setNewCandidateData({
-                                  ...newCandidateData,
-                                  phone: e.target.value
-                                })}
-                                className="max-w-[200px]"
-                                placeholder="Phone"
-                                type="tel"
-                              />
-                            </div>
-                          ) : (
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Mail className="w-4 h-4" />
-                                <span className="text-sm">{candidate.email}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Phone className="w-4 h-4" />
-                                <span className="text-sm">{candidate.phone}</span>
-                              </div>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {editingCandidate === candidate.id ? (
-                            <Input
-                              value={newCandidateData.position}
-                              onChange={(e) => setNewCandidateData({
-                                ...newCandidateData,
-                                position: e.target.value
-                              })}
-                              className="max-w-[200px]"
-                              placeholder="Position"
-                            />
-                          ) : (
-                            candidate.position
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            defaultValue={candidate.status}
-                            onValueChange={(value) => handleStatusChange(candidate.id, value as Candidate['status'])}
-                          >
-                            <SelectTrigger className="w-[150px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="new">New</SelectItem>
-                              <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                              <SelectItem value="interviewing">Interviewing</SelectItem>
-                              <SelectItem value="hired">Hired</SelectItem>
-                              <SelectItem value="rejected">Rejected</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          {editingCandidate === candidate.id ? (
-                            <Input
-                              value={newCandidateData.joiningDate}
-                              onChange={(e) => setNewCandidateData({
-                                ...newCandidateData,
-                                joiningDate: e.target.value
-                              })}
-                              className="max-w-[200px]"
-                              type="date"
-                            />
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4" />
-                              <span>{candidate.joiningDate}</span>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {editingCandidate === candidate.id ? (
-                            <textarea
-                              value={newCandidateData.notes}
-                              onChange={(e) => setNewCandidateData({
-                                ...newCandidateData,
-                                notes: e.target.value
-                              })}
-                              className="w-full min-h-[100px] p-2 border rounded"
-                              placeholder="Add notes about the candidate..."
-                            />
-                          ) : (
-                            <div className="max-w-[200px] whitespace-pre-wrap">
-                              {candidate.notes || "No notes added"}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => sendEmailToCandidate(candidate)}
-                              className="mb-2"
-                            >
-                              <Mail className="w-4 h-4 mr-2" />
-                              Send Document Link
-                            </Button>
-                            <div className="grid grid-cols-1 gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDocumentUpload(candidate.id, "PAN CARD")}
-                              >
-                                <Upload className="w-4 h-4 mr-2" />
-                                Upload PAN Card
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDocumentUpload(candidate.id, "AADHAR CARD")}
-                              >
-                                <Upload className="w-4 h-4 mr-2" />
-                                Upload Aadhar Card
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDocumentUpload(candidate.id, "Resume")}
-                              >
-                                <Upload className="w-4 h-4 mr-2" />
-                                Upload Resume
-                              </Button>
-                            </div>
-                            {candidate.documents.map((doc) => (
-                              <Badge 
-                                key={doc.id} 
-                                variant="secondary" 
-                                className="flex items-center justify-between gap-2 p-2"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <FileText className="w-3 h-3" />
-                                  {doc.name}
-                                </div>
-                                <Download 
-                                  className="w-3 h-3 cursor-pointer" 
-                                  onClick={() => downloadDocument(doc)}
-                                />
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {editingCandidate === candidate.id ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => saveCandidateEdit(candidate.id)}
-                            >
-                              Save
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCandidateEdit(candidate.id)}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
 
           <Card className="mb-8">
             <CardHeader>
@@ -560,9 +297,7 @@ const HR = () => {
                               type="email"
                             />
                           ) : (
-                            <span className="text-sm text-muted-foreground hover:text-foreground cursor-pointer">
-                              {manager.email}
-                            </span>
+                            manager.email
                           )}
                         </TableCell>
                         <TableCell>{manager.department}</TableCell>
@@ -609,3 +344,4 @@ const HR = () => {
 };
 
 export default HR;
+
