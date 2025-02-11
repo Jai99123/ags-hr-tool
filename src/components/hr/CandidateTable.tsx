@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Edit, Plus } from "lucide-react";
+import { FileText, Edit, Plus, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import {
   Select,
@@ -301,7 +301,7 @@ const CandidateTable = ({
               </div>
             </TableCell>
             <TableCell>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 {editingCandidate === candidate.id ? (
                   <Button
                     variant="outline"
@@ -332,6 +332,16 @@ const CandidateTable = ({
                       Generate Link
                     </Button>
                   </>
+                )}
+                {!isAddingCandidate && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onCancelAdd()} // This will start adding a new candidate
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Add New
+                  </Button>
                 )}
               </div>
             </TableCell>
