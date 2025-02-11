@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "./ui/card";
@@ -88,6 +87,17 @@ const OpenPositions = () => {
   });
 
   const isHRTeam = true; // This would be connected to your auth state
+  const currentUserEmail = "john.smith@company.com"; // This would come from your auth state
+
+  // Helper function to check if user is assigned manager
+  const isAssignedManager = (position: Position) => {
+    return position.managerEmail === currentUserEmail;
+  };
+
+  // Helper function to check if user can view apply actions
+  const canViewApplyActions = (position: Position) => {
+    return isHRTeam || isAssignedManager(position);
+  };
 
   const handleStatusChange = (positionId: string, status: "active" | "inactive") => {
     setPositions(positions.map(pos => 
@@ -396,14 +406,16 @@ const OpenPositions = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleApply(position.id)}
-                        title="Apply as Internal Employee"
-                      >
-                        <User className="w-4 h-4" />
-                      </Button>
+                      {canViewApplyActions(position) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleApply(position.id)}
+                          title="View Applications"
+                        >
+                          <User className="w-4 h-4" />
+                        </Button>
+                      )}
                       {isHRTeam && (
                         <Button
                           variant="outline"
@@ -414,14 +426,16 @@ const OpenPositions = () => {
                           <Mail className="w-4 h-4" />
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUploadResume(position.id)}
-                        title="Upload Resume"
-                      >
-                        <FileText className="w-4 h-4" />
-                      </Button>
+                      {canViewApplyActions(position) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUploadResume(position.id)}
+                          title="Upload Resume"
+                        >
+                          <FileText className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
