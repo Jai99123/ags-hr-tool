@@ -242,6 +242,11 @@ const HR = () => {
     }
   };
 
+  const sendEmailToManager = (managerEmail: string) => {
+    toast.success(`Email sent to ${managerEmail}`);
+    console.log('Sending email to:', managerEmail);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -330,24 +335,36 @@ const HR = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {editingManager === manager.id ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => saveManagerEdit(manager.id)}
-                            >
-                              Save
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleManagerEdit(manager.id)}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </Button>
-                          )}
+                          <div className="flex gap-2">
+                            {editingManager === manager.id ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => saveManagerEdit(manager.id)}
+                              >
+                                Save
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleManagerEdit(manager.id)}
+                                >
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => sendEmailToManager(manager.email)}
+                                >
+                                  <Mail className="w-4 h-4 mr-2" />
+                                  Email
+                                </Button>
+                              </>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
