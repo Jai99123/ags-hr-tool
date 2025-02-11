@@ -26,14 +26,6 @@ const Header = () => {
               HR
             </Button>
           </Link>
-          <Link to="/manager">
-            <Button 
-              variant={location.pathname === "/manager" ? "default" : "ghost"}
-              size="sm"
-            >
-              Manager
-            </Button>
-          </Link>
         </nav>
       </div>
       <Button variant="outline">
