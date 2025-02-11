@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Users, FileText, ClipboardCheck, Edit, UserPlus, Upload, Download, Calendar, Phone, Mail } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -223,6 +222,26 @@ const HR = () => {
     toast.success(`Downloading ${document.name}`);
   };
 
+  const handleAssignCandidate = (managerId: string, candidateEmail: string) => {
+    const manager = managers.find(m => m.id === managerId);
+    if (manager) {
+      const emailContent = `
+        Dear ${manager.name},
+        
+        A new candidate has been assigned to you for review.
+        Candidate Email: ${candidateEmail}
+        
+        Please review their application and provide your feedback.
+        
+        Best regards,
+        HR Team
+      `;
+      
+      toast.success(`Assignment notification sent to ${manager.email}`);
+      console.log('Email content:', emailContent);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -269,6 +288,7 @@ const HR = () => {
                       <TableHead>Email Address</TableHead>
                       <TableHead>Department</TableHead>
                       <TableHead>Assigned Positions</TableHead>
+                      <TableHead>Assign Candidate</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -311,6 +331,34 @@ const HR = () => {
                           </div>
                         </TableCell>
                         <TableCell>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Candidate email"
+                              type="email"
+                              className="max-w-[200px]"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleAssignCandidate(manager.id, e.currentTarget.value);
+                                  e.currentTarget.value = '';
+                                }
+                              }}
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const input = document.querySelector(`input[type="email"]`) as HTMLInputElement;
+                                if (input && input.value) {
+                                  handleAssignCandidate(manager.id, input.value);
+                                  input.value = '';
+                                }
+                              }}
+                            >
+                              <Mail className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           {editingManager === manager.id ? (
                             <Button
                               variant="outline"
@@ -344,4 +392,3 @@ const HR = () => {
 };
 
 export default HR;
-
