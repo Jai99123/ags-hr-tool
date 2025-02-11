@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { Users, FileText, ClipboardCheck, UserPlus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -14,7 +15,7 @@ interface Application {
   candidateName: string;
   email: string;
   position: string;
-  status: "new" | "shortlisted" | "interviewing" | "rejected" | "hired";
+  status: "new" | "selected" | "rejected";
   applicationDate: string;
   resumeUrl?: string;
   assignedManager?: string;
@@ -28,21 +29,23 @@ interface Manager {
   assignedPositions: string[];
 }
 
+interface Document {
+  id: string;
+  name: "PAN CARD" | "AADHAR CARD" | "Resume";
+  type: string;
+  url: string;
+}
+
 interface Candidate {
   id: string;
   name: string;
   email: string;
   phone: string;
   position: string;
-  status: "new" | "shortlisted" | "interviewing" | "rejected" | "hired";
+  status: "new" | "selected" | "rejected";
   joiningDate: string;
   notes?: string;
-  documents: {
-    id: string;
-    name: "PAN CARD" | "AADHAR CARD" | "Resume";
-    type: string;
-    url: string;
-  }[];
+  documents: Document[];
 }
 
 const HR = () => {
@@ -61,7 +64,7 @@ const HR = () => {
       candidateName: "Jane Smith",
       email: "jane@example.com",
       position: "UX Designer",
-      status: "shortlisted",
+      status: "selected",
       applicationDate: "2024-02-10",
       resumeUrl: "#",
     },
@@ -182,7 +185,8 @@ const HR = () => {
         candidate.id === candidateId
           ? {
               ...candidate,
-              ...newCandidateData
+              ...newCandidateData,
+              status: newCandidateData.status
             }
           : candidate
       ));
@@ -213,33 +217,12 @@ const HR = () => {
     toast.success(`${documentType} uploaded successfully`);
   };
 
-  const downloadDocument = (document: Candidate['documents'][0]) => {
+  const downloadDocument = (document: Document) => {
     toast.success(`Downloading ${document.name}`);
   };
 
-  const handleAssignCandidate = (managerId: string, candidateEmail: string) => {
-    const manager = managers.find(m => m.id === managerId);
-    if (manager) {
-      const emailContent = `
-        Dear ${manager.name},
-        
-        A new candidate has been assigned to you for review.
-        Candidate Email: ${candidateEmail}
-        
-        Please review their application and provide your feedback.
-        
-        Best regards,
-        HR Team
-      `;
-      
-      toast.success(`Assignment notification sent to ${manager.email}`);
-      console.log('Email content:', emailContent);
-    }
-  };
-
-  const sendEmailToManager = (managerEmail: string) => {
-    toast.success(`Email sent to ${managerEmail}`);
-    console.log('Sending email to:', managerEmail);
+  const handleNewManagerChange = (field: keyof typeof newManager, value: string) => {
+    setNewManager({ ...newManager, [field]: value });
   };
 
   const handleAddManager = () => {
@@ -261,8 +244,9 @@ const HR = () => {
     }
   };
 
-  const handleNewManagerChange = (field: keyof typeof newManager, value: string) => {
-    setNewManager({ ...newManager, [field]: value });
+  const sendEmailToManager = (managerEmail: string) => {
+    toast.success(`Email sent to ${managerEmail}`);
+    console.log('Sending email to:', managerEmail);
   };
 
   return (
@@ -361,3 +345,4 @@ const HR = () => {
 };
 
 export default HR;
+
