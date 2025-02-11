@@ -36,7 +36,7 @@ const Index = () => {
           />
           
           <MetricCard
-            title="Open Positions"
+            title="AGS Career"
             value="12"
             icon={<Briefcase className="w-6 h-6 text-primary" />}
             onClick={handlePositionsClick}
