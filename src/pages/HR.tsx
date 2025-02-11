@@ -51,6 +51,7 @@ interface Candidate {
   position: string;
   status: "new" | "shortlisted" | "interviewing" | "rejected" | "hired";
   joiningDate: string;
+  notes?: string;
   documents: {
     id: string;
     name: "PAN CARD" | "AADHAR CARD" | "Resume";
@@ -107,6 +108,7 @@ const HR = () => {
       position: "Senior Developer",
       status: "new",
       joiningDate: "2024-03-01",
+      notes: "",
       documents: [
         {
           id: "doc1",
@@ -128,7 +130,8 @@ const HR = () => {
     email: "",
     phone: "",
     position: "",
-    joiningDate: ""
+    joiningDate: "",
+    notes: ""
   });
 
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
@@ -254,6 +257,11 @@ const HR = () => {
     toast.success(`Downloading ${document.name}`);
   };
 
+  const sendEmailToCandidate = (candidate: Candidate) => {
+    const documentLink = `https://your-domain.com/documents/${candidate.id}`;
+    toast.success(`Email sent to ${candidate.email} with document upload link: ${documentLink}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -301,6 +309,7 @@ const HR = () => {
                       <TableHead>Position</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Joining Date</TableHead>
+                      <TableHead>Notes</TableHead>
                       <TableHead>Documents</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -411,7 +420,33 @@ const HR = () => {
                           )}
                         </TableCell>
                         <TableCell>
+                          {editingCandidate === candidate.id ? (
+                            <textarea
+                              value={newCandidateData.notes}
+                              onChange={(e) => setNewCandidateData({
+                                ...newCandidateData,
+                                notes: e.target.value
+                              })}
+                              className="w-full min-h-[100px] p-2 border rounded"
+                              placeholder="Add notes about the candidate..."
+                            />
+                          ) : (
+                            <div className="max-w-[200px] whitespace-pre-wrap">
+                              {candidate.notes || "No notes added"}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <div className="flex flex-col gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => sendEmailToCandidate(candidate)}
+                              className="mb-2"
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Send Document Link
+                            </Button>
                             <div className="grid grid-cols-1 gap-2">
                               <Button
                                 variant="outline"
