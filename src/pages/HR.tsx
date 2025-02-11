@@ -123,7 +123,8 @@ const HR = () => {
     phone: "",
     position: "",
     joiningDate: "",
-    notes: ""
+    notes: "",
+    status: "new" as "new" | "selected" | "rejected"
   });
 
   const [isAddingManager, setIsAddingManager] = useState(false);
@@ -169,7 +170,8 @@ const HR = () => {
         phone: candidate.phone,
         position: candidate.position,
         joiningDate: candidate.joiningDate,
-        notes: candidate.notes || ""
+        notes: candidate.notes || "",
+        status: candidate.status
       });
     }
   };

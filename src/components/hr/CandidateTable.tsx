@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Edit } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Document {
   id: string;
@@ -19,26 +26,29 @@ interface Candidate {
   email: string;
   phone: string;
   position: string;
-  status: "new" | "shortlisted" | "interviewing" | "rejected" | "hired";
+  status: "new" | "selected" | "rejected";
   joiningDate: string;
   notes?: string;
   documents: Document[];
 }
 
+interface CandidateData {
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  joiningDate: string;
+  notes: string;
+  status: "new" | "selected" | "rejected";
+}
+
 interface CandidateTableProps {
   candidates: Candidate[];
   editingCandidate: string | null;
-  newCandidateData: {
-    name: string;
-    email: string;
-    phone: string;
-    position: string;
-    joiningDate: string;
-    notes: string;
-  };
+  newCandidateData: CandidateData;
   onEdit: (candidateId: string) => void;
   onSave: (candidateId: string) => void;
-  onUpdateCandidateData: (data: typeof newCandidateData) => void;
+  onUpdateCandidateData: (data: CandidateData) => void;
   onDocumentUpload: (candidateId: string, documentType: "PAN CARD" | "AADHAR CARD" | "Resume") => void;
   onDocumentDownload: (document: Document) => void;
 }
@@ -129,17 +139,35 @@ const CandidateTable = ({
               )}
             </TableCell>
             <TableCell>
-              <Badge
-                variant={
-                  candidate.status === "hired"
-                    ? "default"
-                    : candidate.status === "rejected"
-                    ? "destructive"
-                    : "secondary"
-                }
-              >
-                {candidate.status}
-              </Badge>
+              {editingCandidate === candidate.id ? (
+                <Select
+                  value={newCandidateData.status}
+                  onValueChange={(value: "new" | "selected" | "rejected") =>
+                    onUpdateCandidateData({ ...newCandidateData, status: value })
+                  }
+                >
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="selected">Selected</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Badge
+                  variant={
+                    candidate.status === "selected"
+                      ? "default"
+                      : candidate.status === "rejected"
+                      ? "destructive"
+                      : "secondary"
+                  }
+                >
+                  {candidate.status}
+                </Badge>
+              )}
             </TableCell>
             <TableCell>
               <div className="flex flex-col gap-2">
