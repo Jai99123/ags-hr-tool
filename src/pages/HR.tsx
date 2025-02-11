@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -39,6 +38,7 @@ interface Application {
 interface Manager {
   id: string;
   name: string;
+  email: string;
   department: string;
   assignedPositions: string[];
 }
@@ -69,12 +69,14 @@ const HR = () => {
     {
       id: "1",
       name: "Michael Scott",
+      email: "michael.scott@company.com",
       department: "Technology",
       assignedPositions: ["Senior Developer"],
     },
     {
       id: "2",
       name: "Sarah Johnson",
+      email: "sarah.johnson@company.com",
       department: "Design",
       assignedPositions: ["UX Designer"],
     },
@@ -82,6 +84,7 @@ const HR = () => {
 
   const [editingManager, setEditingManager] = useState<string | null>(null);
   const [newManagerName, setNewManagerName] = useState("");
+  const [newManagerEmail, setNewManagerEmail] = useState("");
 
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
     setApplications(applications.map(app => 
@@ -114,17 +117,23 @@ const HR = () => {
     if (manager) {
       setEditingManager(managerId);
       setNewManagerName(manager.name);
+      setNewManagerEmail(manager.email);
     }
   };
 
   const saveManagerEdit = (managerId: string) => {
-    if (newManagerName.trim()) {
+    if (newManagerName.trim() && newManagerEmail.trim()) {
       setManagers(managers.map(manager =>
-        manager.id === managerId ? { ...manager, name: newManagerName } : manager
+        manager.id === managerId 
+          ? { ...manager, name: newManagerName, email: newManagerEmail } 
+          : manager
       ));
       setEditingManager(null);
       setNewManagerName("");
+      setNewManagerEmail("");
       toast.success("Manager information updated successfully");
+    } else {
+      toast.error("Please fill in both name and email");
     }
   };
 
@@ -183,6 +192,7 @@ const HR = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Manager Name</TableHead>
+                      <TableHead>Email Address</TableHead>
                       <TableHead>Department</TableHead>
                       <TableHead>Assigned Positions</TableHead>
                       <TableHead>Actions</TableHead>
@@ -197,9 +207,25 @@ const HR = () => {
                               value={newManagerName}
                               onChange={(e) => setNewManagerName(e.target.value)}
                               className="max-w-[200px]"
+                              placeholder="Manager name"
                             />
                           ) : (
                             manager.name
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editingManager === manager.id ? (
+                            <Input
+                              value={newManagerEmail}
+                              onChange={(e) => setNewManagerEmail(e.target.value)}
+                              className="max-w-[200px]"
+                              placeholder="Email address"
+                              type="email"
+                            />
+                          ) : (
+                            <span className="text-sm text-muted-foreground hover:text-foreground cursor-pointer">
+                              {manager.email}
+                            </span>
                           )}
                         </TableCell>
                         <TableCell>{manager.department}</TableCell>
