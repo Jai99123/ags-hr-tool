@@ -49,11 +49,11 @@ interface Candidate {
   email: string;
   phone: string;
   position: string;
-  status: "pending" | "active" | "completed" | "rejected";
+  status: "new" | "shortlisted" | "interviewing" | "rejected" | "hired";
   joiningDate: string;
   documents: {
     id: string;
-    name: string;
+    name: "PAN CARD" | "AADHAR CARD" | "Resume";
     type: string;
     url: string;
   }[];
@@ -105,7 +105,7 @@ const HR = () => {
       email: "alice@example.com",
       phone: "+1 234 567 8901",
       position: "Senior Developer",
-      status: "pending",
+      status: "new",
       joiningDate: "2024-03-01",
       documents: [
         {
@@ -230,8 +230,28 @@ const HR = () => {
     }
   };
 
-  const handleDocumentUpload = (candidateId: string) => {
-    toast.success("Document upload functionality will be implemented here");
+  const handleDocumentUpload = (candidateId: string, documentType: "PAN CARD" | "AADHAR CARD" | "Resume") => {
+    const newDocument = {
+      id: `doc${Date.now()}`,
+      name: documentType,
+      type: "pdf",
+      url: "#"
+    };
+
+    setCandidates(candidates.map(candidate =>
+      candidate.id === candidateId
+        ? {
+            ...candidate,
+            documents: [...candidate.documents.filter(d => d.name !== documentType), newDocument]
+          }
+        : candidate
+    ));
+    
+    toast.success(`${documentType} uploaded successfully`);
+  };
+
+  const downloadDocument = (document: Candidate['documents'][0]) => {
+    toast.success(`Downloading ${document.name}`);
   };
 
   return (
@@ -364,9 +384,10 @@ const HR = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
+                              <SelectItem value="new">New</SelectItem>
+                              <SelectItem value="shortlisted">Shortlisted</SelectItem>
+                              <SelectItem value="interviewing">Interviewing</SelectItem>
+                              <SelectItem value="hired">Hired</SelectItem>
                               <SelectItem value="rejected">Rejected</SelectItem>
                             </SelectContent>
                           </Select>
@@ -391,19 +412,46 @@ const HR = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDocumentUpload(candidate.id)}
-                            >
-                              <Upload className="w-4 h-4 mr-2" />
-                              Upload
-                            </Button>
+                            <div className="grid grid-cols-1 gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload(candidate.id, "PAN CARD")}
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload PAN Card
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload(candidate.id, "AADHAR CARD")}
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload Aadhar Card
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDocumentUpload(candidate.id, "Resume")}
+                              >
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload Resume
+                              </Button>
+                            </div>
                             {candidate.documents.map((doc) => (
-                              <Badge key={doc.id} variant="secondary" className="flex items-center gap-2">
-                                <FileText className="w-3 h-3" />
-                                {doc.name}
-                                <Download className="w-3 h-3 cursor-pointer" />
+                              <Badge 
+                                key={doc.id} 
+                                variant="secondary" 
+                                className="flex items-center justify-between gap-2 p-2"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-3 h-3" />
+                                  {doc.name}
+                                </div>
+                                <Download 
+                                  className="w-3 h-3 cursor-pointer" 
+                                  onClick={() => downloadDocument(doc)}
+                                />
                               </Badge>
                             ))}
                           </div>
