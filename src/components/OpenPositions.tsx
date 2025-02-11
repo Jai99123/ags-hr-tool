@@ -72,8 +72,14 @@ const OpenPositions = () => {
     email: "",
   });
   const [managerName, setManagerName] = useState("");
+  const [availableManagers, setAvailableManagers] = useState<string[]>([
+    "John Smith",
+    "Sarah Johnson",
+    "Michael Brown",
+    "Emma Wilson",
+    "David Clark"
+  ]);
 
-  // Mock HR team check - in real app, this would come from auth
   const isHRTeam = true; // This would be connected to your auth state
 
   const handleStatusChange = (positionId: string, status: "active" | "inactive") => {
@@ -129,6 +135,11 @@ const OpenPositions = () => {
 
   const handleManagerAssignSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!managerName) {
+      toast.error("Please select a manager");
+      return;
+    }
+    
     setPositions(positions.map(pos => 
       pos.id === selectedPositionId ? { ...pos, assignedManager: managerName } : pos
     ));
@@ -272,20 +283,32 @@ const OpenPositions = () => {
               <h3 className="text-lg font-semibold mb-4">Assign Manager</h3>
               <form onSubmit={handleManagerAssignSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Manager Name</label>
-                  <Input
+                  <label className="text-sm font-medium">Select Manager</label>
+                  <Select
                     value={managerName}
-                    onChange={(e) => setManagerName(e.target.value)}
-                    placeholder="Enter manager name"
-                    required
-                  />
+                    onValueChange={setManagerName}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a manager" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableManagers.map((manager) => (
+                        <SelectItem key={manager} value={manager}>
+                          {manager}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex gap-2">
                   <Button type="submit">Assign Manager</Button>
                   <Button 
                     type="button" 
                     variant="outline"
-                    onClick={() => setShowManagerForm(false)}
+                    onClick={() => {
+                      setShowManagerForm(false);
+                      setManagerName("");
+                    }}
                   >
                     Cancel
                   </Button>
