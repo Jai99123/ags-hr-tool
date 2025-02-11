@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus, CheckCircle2, ListTodo } from "lucide-react";
+import { Users, FileText, ClipboardCheck, Download, Edit, UserPlus, CheckCircle2, ListTodo, Link, Upload, Mail } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
@@ -50,6 +50,23 @@ interface OnboardingTask {
   completed: boolean;
   assignedTo: string;
   dueDate: string;
+}
+
+interface CandidateOnboarding {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  position: string;
+  hiringStatus: "pending" | "confirmed" | "completed";
+  joiningDate: string;
+  documents: {
+    idProof?: File;
+    experienceCertificates?: File;
+    educationalQualifications?: File;
+  };
+  onboardingLink?: string;
+  documentStatus: "not_submitted" | "submitted" | "verified" | "completed";
 }
 
 const HR = () => {
@@ -117,6 +134,31 @@ const HR = () => {
       assignedTo: "Department Manager",
       dueDate: "2024-02-21",
     },
+  ]);
+
+  const [candidateOnboarding, setCandidateOnboarding] = useState<CandidateOnboarding[]>([
+    {
+      id: "1",
+      fullName: "John Doe",
+      email: "john@example.com",
+      phoneNumber: "+1234567890",
+      position: "Senior Developer",
+      hiringStatus: "pending",
+      joiningDate: "2024-03-01",
+      documents: {},
+      documentStatus: "not_submitted"
+    },
+    {
+      id: "2",
+      fullName: "Jane Smith",
+      email: "jane@example.com",
+      phoneNumber: "+1987654321",
+      position: "UX Designer",
+      hiringStatus: "confirmed",
+      joiningDate: "2024-03-15",
+      documents: {},
+      documentStatus: "submitted"
+    }
   ]);
 
   const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
@@ -196,6 +238,36 @@ const HR = () => {
       )
     );
     toast.success("Task status updated");
+  };
+
+  const generateOnboardingLink = (candidateId: string) => {
+    const uniqueLink = `https://onboarding.company.com/${candidateId}-${Date.now()}`;
+    setCandidateOnboarding(candidates =>
+      candidates.map(candidate =>
+        candidate.id === candidateId
+          ? { ...candidate, onboardingLink: uniqueLink }
+          : candidate
+      )
+    );
+    toast.success("Onboarding link generated successfully");
+  };
+
+  const updateDocumentStatus = (candidateId: string, status: CandidateOnboarding['documentStatus']) => {
+    setCandidateOnboarding(candidates =>
+      candidates.map(candidate =>
+        candidate.id === candidateId
+          ? { ...candidate, documentStatus: status }
+          : candidate
+      )
+    );
+    toast.success("Document status updated successfully");
+  };
+
+  const sendNotification = (candidateId: string, type: 'document' | 'reminder') => {
+    const candidate = candidateOnboarding.find(c => c.id === candidateId);
+    if (candidate) {
+      toast.success(`${type === 'document' ? 'Document submission confirmation' : 'Joining reminder'} sent to ${candidate.email}`);
+    }
   };
 
   return (
@@ -357,6 +429,104 @@ const HR = () => {
                             <ListTodo className="w-4 h-4 mr-2" />
                             View Details
                           </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Candidate Onboarding</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Candidate Details</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Hiring Status</TableHead>
+                      <TableHead>Joining Date</TableHead>
+                      <TableHead>Documents</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {candidateOnboarding.map((candidate) => (
+                      <TableRow key={candidate.id}>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="font-medium">{candidate.fullName}</div>
+                            <div className="text-sm text-muted-foreground">{candidate.email}</div>
+                            <div className="text-sm text-muted-foreground">{candidate.phoneNumber}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{candidate.position}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={candidate.hiringStatus}
+                            onValueChange={(value: CandidateOnboarding['hiringStatus']) => {
+                              setCandidateOnboarding(candidates =>
+                                candidates.map(c =>
+                                  c.id === candidate.id
+                                    ? { ...c, hiringStatus: value }
+                                    : c
+                                )
+                              );
+                            }}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>{candidate.joiningDate}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={candidate.documentStatus}
+                            onValueChange={(value: CandidateOnboarding['documentStatus']) => 
+                              updateDocumentStatus(candidate.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="not_submitted">Not Submitted</SelectItem>
+                              <SelectItem value="submitted">Submitted</SelectItem>
+                              <SelectItem value="verified">Verified</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => generateOnboardingLink(candidate.id)}
+                            >
+                              <Link className="w-4 h-4 mr-2" />
+                              Generate Link
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => sendNotification(candidate.id, 'document')}
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Send Email
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
