@@ -1,13 +1,17 @@
 
+import { useState } from "react";
 import { Users, Briefcase, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import MetricCard from "@/components/MetricCard";
 import IdeasForm from "@/components/IdeasForm";
 import Header from "@/components/Header";
+import OpenPositions from "@/components/OpenPositions";
 
 const Index = () => {
+  const [showPositions, setShowPositions] = useState(false);
+
   const handlePositionsClick = () => {
-    // Handle click for positions
+    setShowPositions(true);
     console.log("Viewing positions");
   };
 
@@ -47,9 +51,15 @@ const Index = () => {
           />
         </motion.div>
 
-        <div className="mt-8">
-          <IdeasForm />
-        </div>
+        {showPositions ? (
+          <div className="mt-8">
+            <OpenPositions />
+          </div>
+        ) : (
+          <div className="mt-8">
+            <IdeasForm />
+          </div>
+        )}
       </main>
     </div>
   );
