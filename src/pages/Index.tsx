@@ -48,7 +48,7 @@ const Index = () => {
           />
           
           <MetricCard
-            title="Active Learners"
+            title="Learning Management System (LMS)"
             value="156"
             icon={<BookOpen className="w-6 h-6 text-primary" />}
             onClick={handleLearnersClick}
