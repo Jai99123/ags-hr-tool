@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -332,16 +331,6 @@ const CandidateTable = ({
                       Generate Link
                     </Button>
                   </>
-                )}
-                {!isAddingCandidate && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onCancelAdd()} // This will start adding a new candidate
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Add New
-                  </Button>
                 )}
               </div>
             </TableCell>
