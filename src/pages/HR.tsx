@@ -1,21 +1,13 @@
 import { motion } from "framer-motion";
-import { Users, FileText, ClipboardCheck, Edit, UserPlus, Mail } from "lucide-react";
+import { Users, FileText, ClipboardCheck, UserPlus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import MetricCard from "@/components/MetricCard";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
+import CandidateTable from "@/components/hr/CandidateTable";
+import ManagerTable from "@/components/hr/ManagerTable";
 
 interface Application {
   id: string;
@@ -113,6 +105,13 @@ const HR = () => {
     }
   ]);
 
+  const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
+    setApplications(applications.map(app => 
+      app.id === applicationId ? { ...app, status: newStatus } : app
+    ));
+    toast.success("Application status updated successfully");
+  };
+
   const [editingManager, setEditingManager] = useState<string | null>(null);
   const [newManagerName, setNewManagerName] = useState("");
   const [newManagerEmail, setNewManagerEmail] = useState("");
@@ -134,13 +133,6 @@ const HR = () => {
     department: "",
     position: ""
   });
-
-  const handleStatusChange = (applicationId: string, newStatus: Application['status']) => {
-    setApplications(applications.map(app => 
-      app.id === applicationId ? { ...app, status: newStatus } : app
-    ));
-    toast.success("Application status updated successfully");
-  };
 
   const handleManagerEdit = (managerId: string) => {
     const manager = managers.find(m => m.id === managerId);
@@ -267,6 +259,10 @@ const HR = () => {
     }
   };
 
+  const handleNewManagerChange = (field: keyof typeof newManager, value: string) => {
+    setNewManager({ ...newManager, [field]: value });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
@@ -314,148 +310,45 @@ const HR = () => {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Manager Name</TableHead>
-                      <TableHead>Email Address</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Assigned Positions</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isAddingManager && (
-                      <TableRow>
-                        <TableCell>
-                          <Input
-                            placeholder="Manager name"
-                            value={newManager.name}
-                            onChange={(e) => setNewManager({ ...newManager, name: e.target.value })}
-                            className="max-w-[200px]"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            placeholder="Email address"
-                            type="email"
-                            value={newManager.email}
-                            onChange={(e) => setNewManager({ ...newManager, email: e.target.value })}
-                            className="max-w-[200px]"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            placeholder="Department"
-                            value={newManager.department}
-                            onChange={(e) => setNewManager({ ...newManager, department: e.target.value })}
-                            className="max-w-[200px]"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            placeholder="Position"
-                            value={newManager.position}
-                            onChange={(e) => setNewManager({ ...newManager, position: e.target.value })}
-                            className="max-w-[200px]"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleAddManager}
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setIsAddingManager(false);
-                                setNewManager({ name: "", email: "", department: "", position: "" });
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    {managers.map((manager) => (
-                      <TableRow key={manager.id}>
-                        <TableCell>
-                          {editingManager === manager.id ? (
-                            <Input
-                              value={newManagerName}
-                              onChange={(e) => setNewManagerName(e.target.value)}
-                              className="max-w-[200px]"
-                              placeholder="Manager name"
-                            />
-                          ) : (
-                            manager.name
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {editingManager === manager.id ? (
-                            <Input
-                              value={newManagerEmail}
-                              onChange={(e) => setNewManagerEmail(e.target.value)}
-                              className="max-w-[200px]"
-                              placeholder="Email address"
-                              type="email"
-                            />
-                          ) : (
-                            manager.email
-                          )}
-                        </TableCell>
-                        <TableCell>{manager.department}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-2">
-                            {manager.assignedPositions.map((position, index) => (
-                              <Badge key={index} variant="secondary">
-                                {position}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            {editingManager === manager.id ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => saveManagerEdit(manager.id)}
-                              >
-                                Save
-                              </Button>
-                            ) : (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleManagerEdit(manager.id)}
-                                >
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Edit
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => sendEmailToManager(manager.email)}
-                                >
-                                  <Mail className="w-4 h-4 mr-2" />
-                                  Email
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <ManagerTable
+                  managers={managers}
+                  editingManager={editingManager}
+                  newManagerName={newManagerName}
+                  newManagerEmail={newManagerEmail}
+                  isAddingManager={isAddingManager}
+                  newManager={newManager}
+                  onEdit={handleManagerEdit}
+                  onSave={saveManagerEdit}
+                  onNewManagerChange={handleNewManagerChange}
+                  onAddManager={handleAddManager}
+                  onCancelAdd={() => {
+                    setIsAddingManager(false);
+                    setNewManager({ name: "", email: "", department: "", position: "" });
+                  }}
+                  onEmailManager={sendEmailToManager}
+                  onNewManagerNameChange={setNewManagerName}
+                  onNewManagerEmailChange={setNewManagerEmail}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Hiring & Onboarding</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <CandidateTable
+                  candidates={candidates}
+                  editingCandidate={editingCandidate}
+                  newCandidateData={newCandidateData}
+                  onEdit={handleCandidateEdit}
+                  onSave={saveCandidateEdit}
+                  onUpdateCandidateData={setNewCandidateData}
+                  onDocumentUpload={handleDocumentUpload}
+                  onDocumentDownload={downloadDocument}
+                />
               </div>
             </CardContent>
           </Card>
