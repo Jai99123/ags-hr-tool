@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { toast } from "sonner";
-import { FileText, User, CheckCircle, Edit2, Save } from "lucide-react";
+import { FileText, User, Mail } from "lucide-react";
 
 interface Position {
   id: string;
@@ -29,15 +29,10 @@ interface Position {
   description: string;
   status: "active" | "inactive";
   assignedManager: string;
+  managerEmail?: string;
+  interviewerEmail?: string;
   candidateStatus?: "pending" | "selected" | "rejected";
   feedback?: string;
-}
-
-interface Manager {
-  id: string;
-  name: string;
-  position: string;
-  email: string;
 }
 
 interface NewPosition {
@@ -52,6 +47,11 @@ interface Application {
   resume?: File;
 }
 
+interface AssignmentForm {
+  managerEmail: string;
+  interviewerEmail: string;
+}
+
 const OpenPositions = () => {
   const [positions, setPositions] = useState<Position[]>([
     {
@@ -61,13 +61,14 @@ const OpenPositions = () => {
       description: "We are looking for an experienced developer...",
       status: "active",
       assignedManager: "John Smith",
+      managerEmail: "john.smith@company.com",
       candidateStatus: "pending",
     },
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showNewPositionForm, setShowNewPositionForm] = useState(false);
   const [showApplyForm, setShowApplyForm] = useState(false);
-  const [showManagerForm, setShowManagerForm] = useState(false);
+  const [showAssignForm, setShowAssignForm] = useState(false);
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [newPosition, setNewPosition] = useState<NewPosition>({
     jobId: "",
@@ -78,33 +79,9 @@ const OpenPositions = () => {
     fullName: "",
     email: "",
   });
-  const [managerName, setManagerName] = useState("");
-  const [availableManagers, setAvailableManagers] = useState<string[]>([
-    "John Smith",
-    "Sarah Johnson",
-    "Michael Brown",
-    "Emma Wilson",
-    "David Clark"
-  ]);
-  const [managers, setManagers] = useState<Manager[]>([
-    {
-      id: "1",
-      name: "John Smith",
-      position: "Senior Manager",
-      email: "john.smith@company.com"
-    },
-    {
-      id: "2",
-      name: "Sarah Johnson",
-      position: "Technical Lead",
-      email: "sarah.j@company.com"
-    }
-  ]);
-  const [editingManager, setEditingManager] = useState<Manager | null>(null);
-  const [newManager, setNewManager] = useState<Omit<Manager, 'id'>>({
-    name: "",
-    position: "",
-    email: ""
+  const [assignForm, setAssignForm] = useState<AssignmentForm>({
+    managerEmail: "",
+    interviewerEmail: "",
   });
 
   const isHRTeam = true; // This would be connected to your auth state
@@ -155,24 +132,32 @@ const OpenPositions = () => {
     setApplication({ fullName: "", email: "" });
   };
 
-  const handleAssignManager = (positionId: string) => {
+  const handleAssign = (positionId: string) => {
     setSelectedPositionId(positionId);
-    setShowManagerForm(true);
+    setShowAssignForm(true);
   };
 
-  const handleManagerAssignSubmit = (e: React.FormEvent) => {
+  const handleAssignSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!managerName) {
-      toast.error("Please select a manager");
+    if (!assignForm.managerEmail || !assignForm.interviewerEmail) {
+      toast.error("Please fill in all required fields");
       return;
     }
-    
+
     setPositions(positions.map(pos => 
-      pos.id === selectedPositionId ? { ...pos, assignedManager: managerName } : pos
+      pos.id === selectedPositionId 
+        ? { 
+            ...pos, 
+            managerEmail: assignForm.managerEmail,
+            interviewerEmail: assignForm.interviewerEmail,
+            assignedManager: assignForm.managerEmail.split('@')[0] // Simple name extraction
+          } 
+        : pos
     ));
-    toast.success(`Manager ${managerName} assigned successfully!`);
-    setShowManagerForm(false);
-    setManagerName("");
+    
+    toast.success("Assignment emails have been sent!");
+    setShowAssignForm(false);
+    setAssignForm({ managerEmail: "", interviewerEmail: "" });
   };
 
   const handleUploadResume = (positionId: string) => {
@@ -188,39 +173,6 @@ const OpenPositions = () => {
     input.click();
   };
 
-  const handleEditManager = (manager: Manager) => {
-    setEditingManager(manager);
-    setNewManager({
-      name: manager.name,
-      position: manager.position,
-      email: manager.email
-    });
-    setShowManagerForm(true);
-  };
-
-  const handleManagerSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingManager) {
-      // Update existing manager
-      setManagers(managers.map(m => 
-        m.id === editingManager.id 
-          ? { ...m, ...newManager }
-          : m
-      ));
-      toast.success("Manager updated successfully!");
-    } else {
-      // Add new manager
-      const newId = (managers.length + 1).toString();
-      setManagers([...managers, { id: newId, ...newManager }]);
-      toast.success("New manager added successfully!");
-    }
-
-    setShowManagerForm(false);
-    setEditingManager(null);
-    setNewManager({ name: "", position: "", email: "" });
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -230,28 +182,14 @@ const OpenPositions = () => {
       <Card className="p-6 backdrop-blur-sm bg-card/90">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Open Positions</h2>
-          <div className="flex gap-2">
-            {isHRTeam && (
-              <>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowNewPositionForm(true)}
-                >
-                  New Position
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setEditingManager(null);
-                    setNewManager({ name: "", position: "", email: "" });
-                    setShowManagerForm(true);
-                  }}
-                >
-                  Add Manager
-                </Button>
-              </>
-            )}
-          </div>
+          {isHRTeam && (
+            <Button 
+              variant="outline"
+              onClick={() => setShowNewPositionForm(true)}
+            >
+              New Position
+            </Button>
+          )}
         </div>
 
         {showNewPositionForm && isHRTeam && (
@@ -347,56 +285,43 @@ const OpenPositions = () => {
           </motion.div>
         )}
 
-        {showManagerForm && isHRTeam && (
+        {showAssignForm && isHRTeam && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           >
             <Card className="p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">
-                {editingManager ? 'Edit Manager' : 'Add New Manager'}
-              </h3>
-              <form onSubmit={handleManagerSave} className="space-y-4">
+              <h3 className="text-lg font-semibold mb-4">Assign Position</h3>
+              <form onSubmit={handleAssignSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Manager Name</label>
-                  <Input
-                    value={newManager.name}
-                    onChange={(e) => setNewManager({ ...newManager, name: e.target.value })}
-                    placeholder="Enter manager name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Position</label>
-                  <Input
-                    value={newManager.position}
-                    onChange={(e) => setNewManager({ ...newManager, position: e.target.value })}
-                    placeholder="Enter manager position"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Email Address</label>
+                  <label className="text-sm font-medium">Hiring Manager Email</label>
                   <Input
                     type="email"
-                    value={newManager.email}
-                    onChange={(e) => setNewManager({ ...newManager, email: e.target.value })}
-                    placeholder="Enter manager email"
+                    value={assignForm.managerEmail}
+                    onChange={(e) => setAssignForm({ ...assignForm, managerEmail: e.target.value })}
+                    placeholder="manager@company.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Interviewer Email</label>
+                  <Input
+                    type="email"
+                    value={assignForm.interviewerEmail}
+                    onChange={(e) => setAssignForm({ ...assignForm, interviewerEmail: e.target.value })}
+                    placeholder="interviewer@company.com"
                     required
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button type="submit">
-                    {editingManager ? 'Save Changes' : 'Add Manager'}
-                  </Button>
+                  <Button type="submit">Send Assignment</Button>
                   <Button 
                     type="button" 
                     variant="outline"
                     onClick={() => {
-                      setShowManagerForm(false);
-                      setEditingManager(null);
-                      setNewManager({ name: "", position: "", email: "" });
+                      setShowAssignForm(false);
+                      setAssignForm({ managerEmail: "", interviewerEmail: "" });
                     }}
                   >
                     Cancel
@@ -472,10 +397,10 @@ const OpenPositions = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleAssignManager(position.id)}
-                          title="Assign Manager"
+                          onClick={() => handleAssign(position.id)}
+                          title="Assign Position"
                         >
-                          <CheckCircle className="w-4 h-4" />
+                          <Mail className="w-4 h-4" />
                         </Button>
                       )}
                       <Button
