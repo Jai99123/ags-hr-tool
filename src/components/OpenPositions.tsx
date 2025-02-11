@@ -39,6 +39,12 @@ interface NewPosition {
   description: string;
 }
 
+interface Application {
+  fullName: string;
+  email: string;
+  resume?: File;
+}
+
 const OpenPositions = () => {
   const [positions, setPositions] = useState<Position[]>([
     {
@@ -53,11 +59,19 @@ const OpenPositions = () => {
   ]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showNewPositionForm, setShowNewPositionForm] = useState(false);
+  const [showApplyForm, setShowApplyForm] = useState(false);
+  const [showManagerForm, setShowManagerForm] = useState(false);
+  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [newPosition, setNewPosition] = useState<NewPosition>({
     jobId: "",
     title: "",
     description: "",
   });
+  const [application, setApplication] = useState<Application>({
+    fullName: "",
+    email: "",
+  });
+  const [managerName, setManagerName] = useState("");
 
   // Mock HR team check - in real app, this would come from auth
   const isHRTeam = true; // This would be connected to your auth state
@@ -97,11 +111,30 @@ const OpenPositions = () => {
   };
 
   const handleApply = (positionId: string) => {
-    toast.success("Internal application started! Please complete your profile.");
+    setSelectedPositionId(positionId);
+    setShowApplyForm(true);
+  };
+
+  const handleApplySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success(`Application submitted for ${application.fullName}!`);
+    setShowApplyForm(false);
+    setApplication({ fullName: "", email: "" });
   };
 
   const handleAssignManager = (positionId: string) => {
-    toast.success("Manager assigned successfully!");
+    setSelectedPositionId(positionId);
+    setShowManagerForm(true);
+  };
+
+  const handleManagerAssignSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPositions(positions.map(pos => 
+      pos.id === selectedPositionId ? { ...pos, assignedManager: managerName } : pos
+    ));
+    toast.success(`Manager ${managerName} assigned successfully!`);
+    setShowManagerForm(false);
+    setManagerName("");
   };
 
   const handleUploadResume = (positionId: string) => {
@@ -183,6 +216,82 @@ const OpenPositions = () => {
                 </Button>
               </div>
             </form>
+          </motion.div>
+        )}
+
+        {showApplyForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          >
+            <Card className="p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Apply for Position</h3>
+              <form onSubmit={handleApplySubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Full Name</label>
+                  <Input
+                    value={application.fullName}
+                    onChange={(e) => setApplication({ ...application, fullName: e.target.value })}
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Email Address</label>
+                  <Input
+                    type="email"
+                    value={application.email}
+                    onChange={(e) => setApplication({ ...application, email: e.target.value })}
+                    placeholder="Enter your email address"
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit">Submit Application</Button>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => setShowApplyForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          </motion.div>
+        )}
+
+        {showManagerForm && isHRTeam && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          >
+            <Card className="p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Assign Manager</h3>
+              <form onSubmit={handleManagerAssignSubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Manager Name</label>
+                  <Input
+                    value={managerName}
+                    onChange={(e) => setManagerName(e.target.value)}
+                    placeholder="Enter manager name"
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit">Assign Manager</Button>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => setShowManagerForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </Card>
           </motion.div>
         )}
 
