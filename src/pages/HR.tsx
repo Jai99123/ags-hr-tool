@@ -288,7 +288,6 @@ const HR = () => {
                       <TableHead>Email Address</TableHead>
                       <TableHead>Department</TableHead>
                       <TableHead>Assigned Positions</TableHead>
-                      <TableHead>Assign Candidate</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -328,34 +327,6 @@ const HR = () => {
                                 {position}
                               </Badge>
                             ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Input
-                              placeholder="Candidate email"
-                              type="email"
-                              className="max-w-[200px]"
-                              onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                  handleAssignCandidate(manager.id, e.currentTarget.value);
-                                  e.currentTarget.value = '';
-                                }
-                              }}
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const input = document.querySelector(`input[type="email"]`) as HTMLInputElement;
-                                if (input && input.value) {
-                                  handleAssignCandidate(manager.id, input.value);
-                                  input.value = '';
-                                }
-                              }}
-                            >
-                              <Mail className="w-4 h-4" />
-                            </Button>
                           </div>
                         </TableCell>
                         <TableCell>
